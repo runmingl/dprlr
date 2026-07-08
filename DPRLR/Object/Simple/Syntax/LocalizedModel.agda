@@ -1,0 +1,69 @@
+module DPRLR.Object.Simple.Syntax.LocalizedModel where
+
+open import Cubical.Foundations.Prelude hiding (Sub ; _▷_ ; fst ; snd)
+
+open import DPRLR.Object.Simple.Model using
+  (SimpleCwF ; SimpleDirectedStructure ; SimpleDirectedCwF)
+open import DPRLR.Object.Simple.Syntax.LocalizedSyntax
+import DPRLR.Object.Simple.Syntax.Base as Raw
+
+LocalizedSyntaxCwF : SimpleCwF ℓ-zero
+SimpleCwF.Ctx LocalizedSyntaxCwF = Raw.Ctx
+SimpleCwF.Ty LocalizedSyntaxCwF = Raw.Ty
+SimpleCwF.Sub LocalizedSyntaxCwF = Subᴾ
+SimpleCwF.Tm LocalizedSyntaxCwF = Tmᴾ
+SimpleCwF.id LocalizedSyntaxCwF = idᴾ
+SimpleCwF._∘_ LocalizedSyntaxCwF = _∘ᴾ_
+SimpleCwF.id-left LocalizedSyntaxCwF = id-leftᴾ
+SimpleCwF.id-right LocalizedSyntaxCwF = id-rightᴾ
+SimpleCwF.∘-assoc LocalizedSyntaxCwF = ∘-assocᴾ
+SimpleCwF._[_]Tm LocalizedSyntaxCwF = _[_]Tmᴾ
+SimpleCwF.Tm-id LocalizedSyntaxCwF = Tmᴾ-id
+SimpleCwF.Tm-∘ LocalizedSyntaxCwF = Tmᴾ-∘
+SimpleCwF.ε LocalizedSyntaxCwF = Raw.ε
+SimpleCwF.ε-sub LocalizedSyntaxCwF = ε-subᴾ
+SimpleCwF.εη LocalizedSyntaxCwF = εηᴾ
+SimpleCwF._▷_ LocalizedSyntaxCwF = Raw._▷_
+SimpleCwF.p LocalizedSyntaxCwF = pᴾ
+SimpleCwF.q LocalizedSyntaxCwF = qᴾ
+SimpleCwF.⟨_,_⟩ LocalizedSyntaxCwF = ⟨_,_⟩ᴾ
+SimpleCwF.p-⟨⟩ LocalizedSyntaxCwF = p-⟨⟩ᴾ
+SimpleCwF.q-⟨⟩ LocalizedSyntaxCwF = q-⟨⟩ᴾ
+SimpleCwF.▷η LocalizedSyntaxCwF = ▷ηᴾ
+SimpleCwF.⟨⟩-∘ LocalizedSyntaxCwF = ⟨⟩-∘ᴾ
+SimpleCwF.Bool LocalizedSyntaxCwF = Raw.Bool
+SimpleCwF.true LocalizedSyntaxCwF = trueᴾ
+SimpleCwF.false LocalizedSyntaxCwF = falseᴾ
+SimpleCwF.if_then_else_ LocalizedSyntaxCwF = ifᴾ
+SimpleCwF.true[] LocalizedSyntaxCwF = true[]ᴾ
+SimpleCwF.false[] LocalizedSyntaxCwF = false[]ᴾ
+SimpleCwF.if[] LocalizedSyntaxCwF = if[]ᴾ
+SimpleCwF.βif-true LocalizedSyntaxCwF = βif-trueᴾ
+SimpleCwF.βif-false LocalizedSyntaxCwF = βif-falseᴾ
+SimpleCwF._×ᵗʸ_ LocalizedSyntaxCwF = Raw._×ᵗʸ_
+SimpleCwF.pair LocalizedSyntaxCwF = pairᴾ
+SimpleCwF.fst LocalizedSyntaxCwF = fstᴾ
+SimpleCwF.snd LocalizedSyntaxCwF = sndᴾ
+SimpleCwF.pair[] LocalizedSyntaxCwF = pair[]ᴾ
+SimpleCwF.fst[] LocalizedSyntaxCwF = fst[]ᴾ
+SimpleCwF.snd[] LocalizedSyntaxCwF = snd[]ᴾ
+SimpleCwF._⇒ᵗʸ_ LocalizedSyntaxCwF = Raw._⇒ᵗʸ_
+SimpleCwF.lam LocalizedSyntaxCwF = lamᴾ
+SimpleCwF.app LocalizedSyntaxCwF = appᴾ
+SimpleCwF.lam[] LocalizedSyntaxCwF = lam[]ᴾ
+SimpleCwF.app[] LocalizedSyntaxCwF = app[]ᴾ
+SimpleCwF.β⇒ LocalizedSyntaxCwF = β⇒ᴾ
+SimpleCwF.η⇒ LocalizedSyntaxCwF = η⇒ᴾ
+SimpleCwF.β×₁ LocalizedSyntaxCwF = β×₁ᴾ
+SimpleCwF.β×₂ LocalizedSyntaxCwF = β×₂ᴾ
+SimpleCwF.η× LocalizedSyntaxCwF = η×ᴾ
+
+LocalizedSyntaxDirected : SimpleDirectedStructure LocalizedSyntaxCwF
+SimpleDirectedStructure.tm-set LocalizedSyntaxDirected Γ A = Tmᴾ-isSet
+SimpleDirectedStructure.sub-set LocalizedSyntaxDirected Γ Δ = Subᴾ-isSet
+SimpleDirectedStructure.tm-thin LocalizedSyntaxDirected Γ A = Tmᴾ-isThin
+SimpleDirectedStructure.tm-segal LocalizedSyntaxDirected Γ A = Tmᴾ-isSegal
+
+LocalizedSyntaxModel : SimpleDirectedCwF ℓ-zero
+SimpleDirectedCwF.cwf LocalizedSyntaxModel = LocalizedSyntaxCwF
+SimpleDirectedCwF.directed LocalizedSyntaxModel = LocalizedSyntaxDirected
