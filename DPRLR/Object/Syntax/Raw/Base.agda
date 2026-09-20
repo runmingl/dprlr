@@ -1,4 +1,4 @@
-module DPRLR.Object.Simple.Syntax.Base where
+module DPRLR.Object.Syntax.Raw.Base where
 
 open import Cubical.Foundations.Prelude hiding (Sub ; _▷_ ; fst ; snd)
 

@@ -1,15 +1,15 @@
-module DPRLR.Object.Simple.Displayed where
+module DPRLR.Object.Model.DisplayedModel where
 
 open import Cubical.Foundations.Prelude hiding (Sub ; _▷_ ; fst ; snd ; lift)
 open import Cubical.Data.Sigma hiding (Sub)
 
 open import DPRLR.Simplicial.Hom
-open import DPRLR.Simplicial.ProductExtensionality
-open import DPRLR.Object.Simple.Model using (SimpleCwF)
+open import DPRLR.Simplicial.Product
+open import DPRLR.Object.Model.Model using (SimpleCwF)
 
 record DisplayedSimpleCwF
-  {ℓM : Level} (ℓD₀ ℓD₁ : Level) (𝓒 : SimpleCwF ℓM)
-  : Type (ℓ-suc (ℓ-max ℓM (ℓ-max ℓD₀ ℓD₁))) where
+  {ℓS ℓM : Level} (ℓD₀ ℓD₁ : Level) (𝓒 : SimpleCwF ℓS ℓM)
+  : Type (ℓ-suc (ℓ-max (ℓ-max ℓS ℓM) (ℓ-max ℓD₀ ℓD₁))) where
   open SimpleCwF 𝓒
 
   infixl 30 _∘∙_
@@ -339,11 +339,63 @@ record DisplayedSimpleCwF
       → Tm∙ Γ∙ (A∙ ⇒ᵗʸ∙ B∙)
           ⊢ lam∙ (app∙ (F∙ [ p∙ ]Tm∙) q∙) ≤[ η⇒ F ] F∙
 
+constantDisplayed : {ℓCS ℓC ℓS ℓM : Level} {𝓒 : SimpleCwF ℓCS ℓC}
+  → SimpleCwF ℓS ℓM → DisplayedSimpleCwF ℓS ℓM 𝓒
+DisplayedSimpleCwF.Ctx∙ (constantDisplayed 𝓜) _ = SimpleCwF.Ctx 𝓜
+DisplayedSimpleCwF.Ty∙ (constantDisplayed 𝓜) _ = SimpleCwF.Ty 𝓜
+DisplayedSimpleCwF.Sub∙ (constantDisplayed 𝓜) Γ Δ _ = SimpleCwF.Sub 𝓜 Γ Δ
+DisplayedSimpleCwF.Tm∙ (constantDisplayed 𝓜) Γ A _ = SimpleCwF.Tm 𝓜 Γ A
+DisplayedSimpleCwF.id∙ (constantDisplayed 𝓜) = SimpleCwF.id 𝓜
+DisplayedSimpleCwF._∘∙_ (constantDisplayed 𝓜) = SimpleCwF._∘_ 𝓜
+DisplayedSimpleCwF.id-left∙ (constantDisplayed 𝓜) = SimpleCwF.id-left 𝓜
+DisplayedSimpleCwF.id-right∙ (constantDisplayed 𝓜) = SimpleCwF.id-right 𝓜
+DisplayedSimpleCwF.∘-assoc∙ (constantDisplayed 𝓜) = SimpleCwF.∘-assoc 𝓜
+DisplayedSimpleCwF._[_]Tm∙ (constantDisplayed 𝓜) = SimpleCwF._[_]Tm 𝓜
+DisplayedSimpleCwF.Tm-id∙ (constantDisplayed 𝓜) = SimpleCwF.Tm-id 𝓜
+DisplayedSimpleCwF.Tm-∘∙ (constantDisplayed 𝓜) = SimpleCwF.Tm-∘ 𝓜
+DisplayedSimpleCwF.ε∙ (constantDisplayed 𝓜) = SimpleCwF.ε 𝓜
+DisplayedSimpleCwF.ε-sub∙ (constantDisplayed 𝓜) = SimpleCwF.ε-sub 𝓜
+DisplayedSimpleCwF.εη∙ (constantDisplayed 𝓜) = SimpleCwF.εη 𝓜
+DisplayedSimpleCwF._▷∙_ (constantDisplayed 𝓜) = SimpleCwF._▷_ 𝓜
+DisplayedSimpleCwF.p∙ (constantDisplayed 𝓜) = SimpleCwF.p 𝓜
+DisplayedSimpleCwF.q∙ (constantDisplayed 𝓜) = SimpleCwF.q 𝓜
+DisplayedSimpleCwF.⟨_,_⟩∙ (constantDisplayed 𝓜) = SimpleCwF.⟨_,_⟩ 𝓜
+DisplayedSimpleCwF.p-⟨⟩∙ (constantDisplayed 𝓜) = SimpleCwF.p-⟨⟩ 𝓜
+DisplayedSimpleCwF.q-⟨⟩∙ (constantDisplayed 𝓜) = SimpleCwF.q-⟨⟩ 𝓜
+DisplayedSimpleCwF.▷η∙ (constantDisplayed 𝓜) = SimpleCwF.▷η 𝓜
+DisplayedSimpleCwF.⟨⟩-∘∙ (constantDisplayed 𝓜) = SimpleCwF.⟨⟩-∘ 𝓜
+DisplayedSimpleCwF.Bool∙ (constantDisplayed 𝓜) = SimpleCwF.Bool 𝓜
+DisplayedSimpleCwF.true∙ (constantDisplayed 𝓜) = SimpleCwF.true 𝓜
+DisplayedSimpleCwF.false∙ (constantDisplayed 𝓜) = SimpleCwF.false 𝓜
+DisplayedSimpleCwF.if∙ (constantDisplayed 𝓜) = SimpleCwF.if_then_else_ 𝓜
+DisplayedSimpleCwF.true[]∙ (constantDisplayed 𝓜) = SimpleCwF.true[] 𝓜
+DisplayedSimpleCwF.false[]∙ (constantDisplayed 𝓜) = SimpleCwF.false[] 𝓜
+DisplayedSimpleCwF.if[]∙ (constantDisplayed 𝓜) = SimpleCwF.if[] 𝓜
+DisplayedSimpleCwF.βif-true∙ (constantDisplayed 𝓜) = SimpleCwF.βif-true 𝓜
+DisplayedSimpleCwF.βif-false∙ (constantDisplayed 𝓜) = SimpleCwF.βif-false 𝓜
+DisplayedSimpleCwF._×ᵗʸ∙_ (constantDisplayed 𝓜) = SimpleCwF._×ᵗʸ_ 𝓜
+DisplayedSimpleCwF.pair∙ (constantDisplayed 𝓜) = SimpleCwF.pair 𝓜
+DisplayedSimpleCwF.fst∙ (constantDisplayed 𝓜) = SimpleCwF.fst 𝓜
+DisplayedSimpleCwF.snd∙ (constantDisplayed 𝓜) = SimpleCwF.snd 𝓜
+DisplayedSimpleCwF.pair[]∙ (constantDisplayed 𝓜) = SimpleCwF.pair[] 𝓜
+DisplayedSimpleCwF.fst[]∙ (constantDisplayed 𝓜) = SimpleCwF.fst[] 𝓜
+DisplayedSimpleCwF.snd[]∙ (constantDisplayed 𝓜) = SimpleCwF.snd[] 𝓜
+DisplayedSimpleCwF._⇒ᵗʸ∙_ (constantDisplayed 𝓜) = SimpleCwF._⇒ᵗʸ_ 𝓜
+DisplayedSimpleCwF.lam∙ (constantDisplayed 𝓜) = SimpleCwF.lam 𝓜
+DisplayedSimpleCwF.app∙ (constantDisplayed 𝓜) = SimpleCwF.app 𝓜
+DisplayedSimpleCwF.lam[]∙ (constantDisplayed 𝓜) = SimpleCwF.lam[] 𝓜
+DisplayedSimpleCwF.app[]∙ (constantDisplayed 𝓜) = SimpleCwF.app[] 𝓜
+DisplayedSimpleCwF.β⇒∙ (constantDisplayed 𝓜) = SimpleCwF.β⇒ 𝓜
+DisplayedSimpleCwF.η⇒∙ (constantDisplayed 𝓜) = SimpleCwF.η⇒ 𝓜
+DisplayedSimpleCwF.β×₁∙ (constantDisplayed 𝓜) = SimpleCwF.β×₁ 𝓜
+DisplayedSimpleCwF.β×₂∙ (constantDisplayed 𝓜) = SimpleCwF.β×₂ 𝓜
+DisplayedSimpleCwF.η×∙ (constantDisplayed 𝓜) = SimpleCwF.η× 𝓜
+
 record DisplayedSection
-  {ℓM ℓD₀ ℓD₁ : Level}
-  {𝓒 : SimpleCwF ℓM}
+  {ℓS ℓM ℓD₀ ℓD₁ : Level}
+  {𝓒 : SimpleCwF ℓS ℓM}
   (𝓓 : DisplayedSimpleCwF ℓD₀ ℓD₁ 𝓒)
-  : Type (ℓ-max ℓM (ℓ-max ℓD₀ ℓD₁)) where
+  : Type (ℓ-max (ℓ-max ℓS ℓM) (ℓ-max ℓD₀ ℓD₁)) where
   module C = SimpleCwF 𝓒
   module D = DisplayedSimpleCwF 𝓓
 
@@ -359,14 +411,14 @@ record DisplayedSection
       (M : C.Tm Γ A)
       → D.Tm∙ (Ctxˢ Γ) (Tyˢ A) M
 
-module _ {ℓM ℓD : Level}
-  {𝓒 : SimpleCwF ℓM}
-  (𝓓 : DisplayedSimpleCwF ℓD ℓD 𝓒) where
+module _ {ℓS ℓM ℓD₀ ℓD₁ : Level}
+  {𝓒 : SimpleCwF ℓS ℓM}
+  (𝓓 : DisplayedSimpleCwF ℓD₀ ℓD₁ 𝓒) where
 
   module C = SimpleCwF 𝓒
   module D = DisplayedSimpleCwF 𝓓
 
-  TotalSimpleCwF : SimpleCwF (ℓ-max ℓM ℓD)
+  TotalSimpleCwF : SimpleCwF (ℓ-max ℓS ℓD₀) (ℓ-max ℓM ℓD₁)
   SimpleCwF.Ctx TotalSimpleCwF =
     Σ C.Ctx D.Ctx∙
   SimpleCwF.Ty TotalSimpleCwF =
@@ -486,78 +538,3 @@ module _ {ℓM ℓD : Level}
   SimpleCwF.η× TotalSimpleCwF P =
     Σ≤ (C.η× (fst P))
       (D.η×∙ (snd P))
-
-  π-Ctx : SimpleCwF.Ctx TotalSimpleCwF → C.Ctx
-  π-Ctx = fst
-
-  π-Ty : SimpleCwF.Ty TotalSimpleCwF → C.Ty
-  π-Ty = fst
-
-  π-Sub :
-    {Γ Δ : SimpleCwF.Ctx TotalSimpleCwF}
-    → SimpleCwF.Sub TotalSimpleCwF Γ Δ
-    → C.Sub (π-Ctx Γ) (π-Ctx Δ)
-  π-Sub = fst
-
-  π-Tm :
-    {Γ : SimpleCwF.Ctx TotalSimpleCwF}
-    {A : SimpleCwF.Ty TotalSimpleCwF}
-    → SimpleCwF.Tm TotalSimpleCwF Γ A
-    → C.Tm (π-Ctx Γ) (π-Ty A)
-  π-Tm = fst
-
-  section-Ctx :
-    DisplayedSection 𝓓
-    → C.Ctx
-    → SimpleCwF.Ctx TotalSimpleCwF
-  section-Ctx 𝓢 Γ =
-    Γ , DisplayedSection.Ctxˢ 𝓢 Γ
-
-  section-Ty :
-    DisplayedSection 𝓓
-    → C.Ty
-    → SimpleCwF.Ty TotalSimpleCwF
-  section-Ty 𝓢 A =
-    A , DisplayedSection.Tyˢ 𝓢 A
-
-  section-Sub :
-    (𝓢 : DisplayedSection 𝓓)
-    {Γ Δ : C.Ctx}
-    → C.Sub Γ Δ
-    → SimpleCwF.Sub TotalSimpleCwF (section-Ctx 𝓢 Γ) (section-Ctx 𝓢 Δ)
-  section-Sub 𝓢 σ =
-    σ , DisplayedSection.Subˢ 𝓢 σ
-
-  section-Tm :
-    (𝓢 : DisplayedSection 𝓓)
-    {Γ : C.Ctx} {A : C.Ty}
-    → C.Tm Γ A
-    → SimpleCwF.Tm TotalSimpleCwF (section-Ctx 𝓢 Γ) (section-Ty 𝓢 A)
-  section-Tm 𝓢 M =
-    M , DisplayedSection.Tmˢ 𝓢 M
-
-  π-section-Ctx :
-    (𝓢 : DisplayedSection 𝓓)
-    (Γ : C.Ctx)
-    → π-Ctx (section-Ctx 𝓢 Γ) ≡ Γ
-  π-section-Ctx 𝓢 Γ = refl
-
-  π-section-Ty :
-    (𝓢 : DisplayedSection 𝓓)
-    (A : C.Ty)
-    → π-Ty (section-Ty 𝓢 A) ≡ A
-  π-section-Ty 𝓢 A = refl
-
-  π-section-Sub :
-    (𝓢 : DisplayedSection 𝓓)
-    {Γ Δ : C.Ctx}
-    (σ : C.Sub Γ Δ)
-    → π-Sub (section-Sub 𝓢 σ) ≡ σ
-  π-section-Sub 𝓢 σ = refl
-
-  π-section-Tm :
-    (𝓢 : DisplayedSection 𝓓)
-    {Γ : C.Ctx} {A : C.Ty}
-    (M : C.Tm Γ A)
-    → π-Tm (section-Tm 𝓢 M) ≡ M
-  π-section-Tm 𝓢 M = refl

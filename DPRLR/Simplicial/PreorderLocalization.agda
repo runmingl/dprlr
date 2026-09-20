@@ -2,22 +2,17 @@ module DPRLR.Simplicial.PreorderLocalization where
 
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Equiv
-open import Cubical.Foundations.Equiv.Properties
 open import Cubical.Foundations.Equiv.Fiberwise
 open import Cubical.Foundations.Equiv.PathSplit
 open import Cubical.Foundations.Function
 open import Cubical.Foundations.HLevels
 open import Cubical.Foundations.Isomorphism
-open import Cubical.Foundations.Path
-open import Cubical.Foundations.Transport
 open import Cubical.Foundations.Univalence
-open import Cubical.Functions.FunExtEquiv
 open import Cubical.Data.Bool hiding (elim ; _≤_)
 open import Cubical.Data.Sigma
 open import Cubical.Data.Unit
 open import Cubical.HITs.Localization as Localization hiding (rec)
-open import Cubical.HITs.Nullification hiding (rec ; elim ; toPathP⁻)
-open import Cubical.HITs.Nullification.Properties using (toPathP⁻-sq)
+open import Cubical.HITs.Nullification hiding (rec ; elim)
 open import Cubical.HITs.Pushout.Base
 open import Cubical.HITs.S1 hiding (rec ; elim)
 
@@ -28,7 +23,7 @@ open import DPRLR.Simplicial.Shapes using (Λ²₁ ; Δ² ; spine₂)
 
 private
   variable
-    ℓ ℓ' : Level
+    ℓ ℓ' ℓ'' ℓ''' : Level
     X Y : Type ℓ
 
 𝕊 : Type ℓ → Type ℓ
@@ -46,30 +41,30 @@ private
 𝕊-cocone X Y =
   Σ (X × X) (λ (x , x') → Y → x ≤ x')
 
-𝕊-elim : {X : Type ℓ} → (Y : Type ℓ') → Iso (𝕊 Y → X) (𝕊-cocone X Y)
-Iso.fun (𝕊-elim Y) k =
-  (k (inr false) , k (inr true))
-  , λ y →
-      (λ i → k (inl (y , i)))
-      , cong k (push (y , false))
-      , cong k (push (y , true))
-Iso.inv (𝕊-elim Y) (_ , q) (inl (y , i)) =
-  hom-path (q y) i
-Iso.inv (𝕊-elim Y) ((x , x') , q) (inr false) = x
-Iso.inv (𝕊-elim Y) ((x , x') , q) (inr true) = x'
-Iso.inv (𝕊-elim Y) (_ , q) (push (y , false) i) =
-  left-endpoint (q y) i
-Iso.inv (𝕊-elim Y) (_ , q) (push (y , true) i) =
-  right-endpoint (q y) i
-Iso.rightInv (𝕊-elim Y) (_ , q) = refl
-Iso.leftInv (𝕊-elim Y) k i (inl (y , j)) = k (inl (y , j))
-Iso.leftInv (𝕊-elim Y) k i (inr false) = k (inr false)
-Iso.leftInv (𝕊-elim Y) k i (inr true) = k (inr true)
-Iso.leftInv (𝕊-elim Y) k i (push (y , false) j) = k (push (y , false) j)
-Iso.leftInv (𝕊-elim Y) k i (push (y , true) j) = k (push (y , true) j)
-
 𝕊-elim≃ : {X : Type ℓ} → (Y : Type ℓ') → (𝕊 Y → X) ≃ 𝕊-cocone X Y
-𝕊-elim≃ Y = isoToEquiv (𝕊-elim Y)
+𝕊-elim≃ {X = X} Y = isoToEquiv 𝕊-elim
+  where
+  𝕊-elim : Iso (𝕊 Y → X) (𝕊-cocone X Y)
+  Iso.fun 𝕊-elim k =
+    (k (inr false) , k (inr true))
+    , λ y →
+        (λ i → k (inl (y , i)))
+        , cong k (push (y , false))
+        , cong k (push (y , true))
+  Iso.inv 𝕊-elim (_ , q) (inl (y , i)) =
+    hom-path (q y) i
+  Iso.inv 𝕊-elim ((x , x') , q) (inr false) = x
+  Iso.inv 𝕊-elim ((x , x') , q) (inr true) = x'
+  Iso.inv 𝕊-elim (_ , q) (push (y , false) i) =
+    left-endpoint (q y) i
+  Iso.inv 𝕊-elim (_ , q) (push (y , true) i) =
+    right-endpoint (q y) i
+  Iso.rightInv 𝕊-elim (_ , q) = refl
+  Iso.leftInv 𝕊-elim k i (inl (y , j)) = k (inl (y , j))
+  Iso.leftInv 𝕊-elim k i (inr false) = k (inr false)
+  Iso.leftInv 𝕊-elim k i (inr true) = k (inr true)
+  Iso.leftInv 𝕊-elim k i (push (y , false) j) = k (push (y , false) j)
+  Iso.leftInv 𝕊-elim k i (push (y , true) j) = k (push (y , true) j)
 
 isBoundarySeparated : Type ℓ → Type ℓ
 isBoundarySeparated X =
@@ -277,93 +272,23 @@ isPreorderΠ {X = X} {Y = Y} isPreorderY α =
     ((x : X) → Sᴾ α → Y x) ≃⟨ invEquiv (flip≃ (Sᴾ α)) ⟩
     (Sᴾ α → (x : X) → Y x) ■
 
-HomP-isProp :
-  {A : Type ℓ} {P : A → Type ℓ'} {x y : A}
-  {h : x ≤ y} {u : P x} {v : P y}
-  → ((a : A) → isProp (P a))
-  → isProp (P ⊢ u ≤[ h ] v)
-HomP-isProp {P = P} {h = h} Pprop =
-  isPropΣ
-    (isPropΠ λ i → Pprop (hom-path h i))
-    λ q →
-      isProp×
-        (isOfHLevelPathP' 1 (isProp→isSet (Pprop _)) _ _)
-        (isOfHLevelPathP' 1 (isProp→isSet (Pprop _)) _ _)
-
-Composite-isProp :
-  {A : Type ℓ}
-  → ((x y : A) → isProp (x ≤ y))
-  → {x y z : A}
-  → (f : x ≤ y)
-  → (g : y ≤ z)
-  → isProp (Composite f g)
-Composite-isProp homProp {z = z} f g =
-  isPropΣ
-    (homProp _ z)
-    (λ h → HomP-isProp λ w → homProp w z)
-
 isPreorder→isSegal :
   {X : Type ℓ}
   → isPreorder X
   → isSegal X
-isPreorder→isSegal {X = X} isPreorderX {x = x} {y = y} {z = z} f g =
-  center , Composite-isProp homProp f g center
-  where
-  homProp : (u v : X) → isProp (u ≤ v)
-  homProp = isPreorder→isThin isPreorderX
+isPreorder→isSegal isPreorderX =
+  invEq isSegal≃isEquiv-spine (toIsEquiv _ (isPreorderX segal))
 
-  spine : Λ²₁ → X
-  spine (inl i) = hom-path f i
-  spine (inr i) = hom-path g i
-  spine (push tt i) = (right-endpoint f ∙ sym (left-endpoint g)) i
-
-  filler : Δ² → X
-  filler = isPreorderX segal .sec .fst spine
-
-  filler-spine : filler ∘ spine₂ ≡ spine
-  filler-spine = isPreorderX segal .sec .snd spine
-
-  filler-spine-at : (s : Λ²₁) → filler (spine₂ s) ≡ spine s
-  filler-spine-at = funExt⁻ filler-spine
-
-  top-collapse : (i : 𝟚) → filler (inl (i , 𝟏)) ≡ z
-  top-collapse i =
-    cong filler (push i)
-    ∙ sym (cong filler (push 𝟏))
-    ∙ filler-spine-at (inr 𝟏)
-    ∙ right-endpoint g
-
-  h : x ≤ z
-  h =
-    (λ i → filler (inl (𝟎 , i)))
-    , filler-spine-at (inl 𝟎) ∙ left-endpoint f
-    , top-collapse 𝟎
-
-  q : (i : 𝟚) → hom-path f i ≤ z
-  q i =
-    (λ j → filler (inl (i , j)))
-    , filler-spine-at (inl i)
-    , top-collapse i
-
-  witness : (λ w → w ≤ z) ⊢ h ≤[ f ] g
-  witness =
-    q
-    , isProp→PathP (λ i → homProp (left-endpoint f i) z) (q 𝟎) h
-    , isProp→PathP (λ i → homProp (right-endpoint f i) z) (q 𝟏) g
-
-  center : Composite f g
-  center = h , witness
-
-isLocalPathFun :
-  isPreorder Y
-  → (α : Requirements) (P₀ P₁ : Tᴾ α → Y)
-  → isPathSplitEquiv (λ (b : (t : Tᴾ α) → P₀ t ≡ P₁ t) → b ∘ Fᴾ α)
-isLocalPathFun isPreorderY α P₀ P₁ =
-  fromIsEquiv _ $
-  isEquiv[equivFunA≃B∘f]→isEquiv[f] (λ b → b ∘ Fᴾ α) funExtEquiv $
-  equivIsEquiv $
-    compEquiv funExtEquiv $
-    congEquiv ((λ k → k ∘ Fᴾ α) , toIsEquiv _ (isPreorderY α))
+isSetThinSegal→isPreorder :
+  {X : Type ℓ} → isSet X → isThin X → isSegal X → isPreorder X
+isSetThinSegal→isPreorder setX thinX segalX segal =
+  fromIsEquiv _ (equivFun isSegal≃isEquiv-spine segalX)
+isSetThinSegal→isPreorder setX thinX segalX thin = 
+  transport (sym isBoundarySeparated≡isThin) thinX tt
+isSetThinSegal→isPreorder {X = X} setX thinX segalX hset =
+  fromIsEquiv _ (equivIsEquiv
+    (compEquiv (UnitToType≃ X)
+      (_ , toIsEquiv _ (transport (sym isS¹Null≡isSet) setX tt))))
 
 rec-unique :
   isPreorder Y
@@ -372,74 +297,107 @@ rec-unique :
   → (z : ∥ X ∥ᴾ) → f z ≡ g z
 rec-unique {X = X} isPreorderY f g p = elim
   where
-  elim : (z : ∥ X ∥ᴾ) → f z ≡ g z
-
   Q : ∥ X ∥ᴾ → Type _
   Q z = f z ≡ g z
 
-  K :
+  Q-isProp : (z : ∥ X ∥ᴾ) → isProp (Q z)
+  Q-isProp z = isPreorder→isSet isPreorderY (f z) (g z)
+
+  elim : (z : ∥ X ∥ᴾ) → Q z
+
+  boundary-agreement :
     (α : Requirements) (w : Sᴾ α → ∥ X ∥ᴾ)
     → (f ∘ ext α w) ∘ Fᴾ α ≡ (g ∘ ext α w) ∘ Fᴾ α
-  K α w =
-    funExt λ s →
-      cong f (isExt α w s) ∙ elim (w s) ∙ cong g (sym (isExt α w s))
+  boundary-agreement α w = funExt λ s →
+      f (ext α w (Fᴾ α s))
+    ≡⟨ cong f (isExt α w s) ⟩
+      f (w s)
+    ≡⟨ elim (w s) ⟩
+      g (w s)
+    ≡⟨ cong g (sym (isExt α w s)) ⟩
+      g (ext α w (Fᴾ α s))
+    ∎
 
-  secCongDep' :
-    (α : Requirements) {u v : Tᴾ α → ∥ X ∥ᴾ} (E : u ≡ v)
-    (bx : (t : Tᴾ α) → Q (u t))
-    (by : (t : Tᴾ α) → Q (v t))
-    → hasSection
-        (λ (P : PathP (λ i → (t : Tᴾ α) → Q (E i t)) bx by)
-         → cong₂ (λ u (b : (t : Tᴾ α) → Q (u t)) → b ∘ Fᴾ α) E P)
-  secCongDep' α E =
-    secCongDep
-      (λ u (b : (t : Tᴾ α) → Q (u t)) → b ∘ Fᴾ α) E
-      (λ u → secCong (isLocalPathFun isPreorderY α (f ∘ u) (g ∘ u)))
-
-  base-path :
-    (α : Requirements) (u v : Tᴾ α → ∥ X ∥ᴾ)
-    → ((s : Sᴾ α) → u (Fᴾ α s) ≡ v (Fᴾ α s))
-    → u ≡ v
-  base-path α u v q = funExt λ t → ≡ext α u v q t
-
-  endpt : (α : Requirements) (u : Tᴾ α → ∥ X ∥ᴾ) (t : Tᴾ α) → Q (u t)
-  endpt α u t = transport refl (elim (u t))
-
-  input :
-    (α : Requirements) (u v : Tᴾ α → ∥ X ∥ᴾ)
-    (q : (s : Sᴾ α) → u (Fᴾ α s) ≡ v (Fᴾ α s))
-    → PathP (λ i → (s : Sᴾ α)
-      → Q (≡ext α u v q (Fᴾ α s) i)) (endpt α u ∘ Fᴾ α) (endpt α v ∘ Fᴾ α)
-  input α u v q i s =
-    transport (λ k → Q (≡isExt α u v q s (~ k) i)) (elim (q s i))
+  extend-agreement :
+    (α : Requirements) (w : Sᴾ α → ∥ X ∥ᴾ) (t : Tᴾ α)
+    → Q (ext α w t)
+  extend-agreement α w =
+    funExt⁻ (secCong (isPreorderY α) (f ∘ ext α w) (g ∘ ext α w)
+      .fst (boundary-agreement α w))
 
   elim ∣ x ∣ = p x
-  elim (ext α w t) =
-    funExt⁻ (secCong (isPreorderY α) (f ∘ ext α w) (g ∘ ext α w) .fst (K α w)) t
+  elim (ext α w t) = extend-agreement α w t
   elim (isExt α w s i) =
-    compPathR→PathP
-      (λ i' →
-        funExt⁻
-          (secCong (isPreorderY α) (f ∘ ext α w) (g ∘ ext α w) .snd (K α w) i')
-          s)
-      i
+    isProp→PathP (λ i → Q-isProp (isExt α w s i))
+      (extend-agreement α w (Fᴾ α s)) (elim (w s)) i
   elim (≡ext α u v q t i) =
-    hcomp
-      (λ k → λ
-        { (i = i0) → transportRefl (elim (u t)) k
-        ; (i = i1) → transportRefl (elim (v t)) k
-        })
-      (secCongDep' α (base-path α u v q) (endpt α u) (endpt α v) .fst (input α u v q) i t)
+    isProp→PathP (λ i → Q-isProp (≡ext α u v q t i))
+      (elim (u t)) (elim (v t)) i
   elim (≡isExt α u v q s i j) =
-    hcomp
-      (λ k → λ
-        { (j = i0) → toPathP⁻-sq (elim (u (Fᴾ α s))) k i
-        ; (j = i1) → toPathP⁻-sq (elim (v (Fᴾ α s))) k i
-        ; (i = i1) → elim (q s j)
-        })
-      (toPathP⁻
-        {A = λ i' → Q (≡isExt α u v q s i' j)}
-        (λ i' →
-          secCongDep' α (base-path α u v q) (endpt α u) (endpt α v)
-            .snd (input α u v q) i' j s)
-        i)
+    isOfHLevel→isOfHLevelDep 2 {B = Q}
+      (λ z → isProp→isSet (Q-isProp z))
+      (elim (u (Fᴾ α s))) (elim (v (Fᴾ α s)))
+      (isProp→PathP (λ j → Q-isProp (≡ext α u v q (Fᴾ α s) j))
+        (elim (u (Fᴾ α s))) (elim (v (Fᴾ α s))))
+      (λ j → elim (q s j))
+      (≡isExt α u v q s) i j
+
+ηᴾ-universal : isPreorder Y → (∥ X ∥ᴾ → Y) ≃ (X → Y)
+ηᴾ-universal localY = isoToEquiv
+  (iso (_∘ ηᴾ) (rec localY) (λ _ → refl)
+    (λ f → funExt (rec-unique localY _ f (λ _ → refl))))
+
+rec-unique₂ : {X : Type ℓ} {Y : Type ℓ'} {Z : Type ℓ''}
+  → isPreorder Z → (f g : ∥ X ∥ᴾ → ∥ Y ∥ᴾ → Z)
+  → ((x : X) (y : Y) → f (ηᴾ x) (ηᴾ y) ≡ g (ηᴾ x) (ηᴾ y))
+  → (x : ∥ X ∥ᴾ) (y : ∥ Y ∥ᴾ) → f x y ≡ g x y
+rec-unique₂ localZ f g p x y =
+  rec-unique localZ (λ x → f x y) (λ x → g x y)
+    (λ x → rec-unique localZ (f (ηᴾ x)) (g (ηᴾ x)) (p x) y) x
+
+rec-unique₃ : {X : Type ℓ} {Y : Type ℓ'} {Z : Type ℓ''} {W : Type ℓ'''}
+  → isPreorder W → (f g : ∥ X ∥ᴾ → ∥ Y ∥ᴾ → ∥ Z ∥ᴾ → W)
+  → ((x : X) (y : Y) (z : Z) → f (ηᴾ x) (ηᴾ y) (ηᴾ z) ≡ g (ηᴾ x) (ηᴾ y) (ηᴾ z))
+  → (x : ∥ X ∥ᴾ) (y : ∥ Y ∥ᴾ) (z : ∥ Z ∥ᴾ) → f x y z ≡ g x y z
+rec-unique₃ localW f g p x y z =
+  rec-unique localW (λ x → f x y z) (λ x → g x y z)
+    (λ x → rec-unique₂ localW (f (ηᴾ x)) (g (ηᴾ x)) (p x) y z) x
+
+rec-uniqueP : {X : Type ℓ} {Y : I → Type ℓ'}
+  → isPreorder (Y i1)
+  → (f : ∥ X ∥ᴾ → Y i0) (g : ∥ X ∥ᴾ → Y i1)
+  → ((x : X) → PathP Y (f (ηᴾ x)) (g (ηᴾ x)))
+  → (x : ∥ X ∥ᴾ) → PathP Y (f x) (g x)
+rec-uniqueP {Y = Y} localY f g p x = toPathP
+  (rec-unique localY (λ x → transport (λ i → Y i) (f x)) g
+    (λ x → fromPathP (p x)) x)
+
+rec-uniqueP₂ : {X : Type ℓ} {Y : Type ℓ'} {Z : I → Type ℓ''}
+  → isPreorder (Z i1)
+  → (f : ∥ X ∥ᴾ → ∥ Y ∥ᴾ → Z i0) (g : ∥ X ∥ᴾ → ∥ Y ∥ᴾ → Z i1)
+  → ((x : X) (y : Y) → PathP Z (f (ηᴾ x) (ηᴾ y)) (g (ηᴾ x) (ηᴾ y)))
+  → (x : ∥ X ∥ᴾ) (y : ∥ Y ∥ᴾ) → PathP Z (f x y) (g x y)
+rec-uniqueP₂ {Z = Z} localZ f g p x y = toPathP
+  (rec-unique₂ localZ (λ x y → transport (λ i → Z i) (f x y)) g
+    (λ x y → fromPathP (p x y)) x y)
+
+isPreorder≃ : {X : Type ℓ} {Y : Type ℓ'} → X ≃ Y → isPreorder X → isPreorder Y
+isPreorder≃ e localX α =
+  fromIsEquiv _ (subst isEquiv (funExt λ f → funExt λ s → secEq e (f (Fᴾ α s))) (equivIsEquiv
+    (compEquiv (equivΠCod λ _ → invEquiv e)
+      (compEquiv (_ , toIsEquiv _ (localX α))
+        (equivΠCod λ _ → e)))))
+
+isPreorder× : {X : Type ℓ} {Y : Type ℓ'}
+  → isPreorder X → isPreorder Y → isPreorder (X × Y)
+isPreorder× {X = X} {Y = Y} localX localY α =
+  fromIsEquiv _ (equivIsEquiv
+    (compEquiv (split (Tᴾ α))
+      (compEquiv (≃-× (_ , toIsEquiv _ (localX α)) (_ , toIsEquiv _ (localY α)))
+        (invEquiv (split (Sᴾ α))))))
+  where
+  split : (W : Type₀) → (W → X × Y) ≃ ((W → X) × (W → Y))
+  split W = isoToEquiv (iso
+    (λ f → (fst ∘ f) , (snd ∘ f))
+    (λ f x → f .fst x , f .snd x)
+    (λ _ → refl) (λ _ → refl))

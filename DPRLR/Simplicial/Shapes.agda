@@ -1,6 +1,5 @@
 module DPRLR.Simplicial.Shapes where
 
-open import Cubical.Foundations.Prelude
 open import Cubical.Data.Sigma
 open import Cubical.Data.Unit.Base
 open import Cubical.HITs.Pushout.Base

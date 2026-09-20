@@ -1,11 +1,11 @@
 module DPRLR.Gluing.GluingModel where
 
-open import Cubical.Foundations.Prelude using (Level ; ℓ-suc)
+open import Cubical.Foundations.Prelude using (Level ; ℓ-suc ; ℓ-max)
 
-open import DPRLR.Object.Simple.Model public
-  using (SimpleCwF ; SimpleDirectedStructure ; SimpleDirectedCwF ; tm-∙)
+open import DPRLR.Object.Model.Model public
+  using (SimpleCwF ; SimpleDirectedCwF)
 
-open import DPRLR.Gluing.Simple.Judgment public
+open import DPRLR.Gluing.LogicalRelations.Judgment public
   using
     ( GluCtx ; Γ° ; Γ∙
     ; GluSub ; σ° ; σ∙
@@ -13,7 +13,7 @@ open import DPRLR.Gluing.Simple.Judgment public
     ; GluTm ; M° ; M∙
     )
 
-open import DPRLR.Gluing.Simple.Substitution public
+open import DPRLR.Gluing.LogicalRelations.Substitution public
   using
     ( εᵍ
     ; ε-subᵍ ; εηᵍ
@@ -23,29 +23,29 @@ open import DPRLR.Gluing.Simple.Substitution public
     ; ▷ηᵍ ; ⟨⟩-∘ᵍ
     )
 
-open import DPRLR.Gluing.Simple.Product public
+open import DPRLR.Gluing.LogicalRelations.Product public
   using
     ( PROD ; PAIR ; FST ; SND
     ; PAIR[] ; FST[] ; SND[]
     ; PROD-preserves-β₁ ; PROD-preserves-β₂ ; PROD-preserves-η
     )
 
-open import DPRLR.Gluing.Simple.Function public
+open import DPRLR.Gluing.LogicalRelations.Function public
   using
     ( FUN ; APP ; LAM
     ; APP[] ; LAM[]
     ; FUN-preserves-β ; FUN-preserves-η
     )
 
-open import DPRLR.Gluing.Simple.Bool public
+open import DPRLR.Gluing.LogicalRelations.Bool public
   using
     ( BOOL ; TRUE ; FALSE ; TRUE[] ; FALSE[]
     ; IF ; IF[] ; IF-preserves-β-true ; IF-preserves-β-false
     )
 
-module _ {ℓM : Level} (𝓜 : SimpleDirectedCwF ℓM) where
+module _ {ℓS ℓM : Level} (𝓜 : SimpleDirectedCwF ℓS ℓM) where
 
-  GluingCwF : SimpleCwF (ℓ-suc ℓM)
+  GluingCwF : SimpleCwF (ℓ-max ℓS (ℓ-suc ℓM)) ℓM
   SimpleCwF.Ctx GluingCwF = GluCtx 𝓜
   SimpleCwF.Ty GluingCwF = GluTy 𝓜
   SimpleCwF.Sub GluingCwF = GluSub 𝓜

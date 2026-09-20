@@ -31,7 +31,7 @@ import DPRLR.Simplicial.Hom using
     Lemma 2.2.
     Inequalities between functions are equivalent to pointwise inequalities.
 -}
-import DPRLR.Simplicial.FunctionExtensionality using
+import DPRLR.Simplicial.Function using
   ( hom-happly
   ; hom-funExt
   ; hom-happly≃
@@ -54,7 +54,7 @@ import DPRLR.Simplicial.Hom using
     A model is a simply typed CwF with booleans, products, functions, and
     directed beta/eta reductions.
 -}
-import DPRLR.Object.Simple.Model using
+import DPRLR.Object.Model.Model using
   ( SimpleCwF
   ; SimpleDirectedCwF
   )
@@ -64,7 +64,7 @@ import DPRLR.Object.Simple.Model using
     The raw directed HIT contains types, contexts, substitutions, terms, and
     the directed computation laws.
 -}
-import DPRLR.Object.Simple.Syntax.Base using
+import DPRLR.Object.Syntax.Raw.Base using
   ( Ty
   ; Ctx
   ; Sub
@@ -110,7 +110,7 @@ import DPRLR.Object.Simple.Syntax.Base using
     Section 2.2.
     The raw constructors form a simply typed CwF before applying the reflector.
 -}
-import DPRLR.Object.Simple.Syntax.RawModel using
+import DPRLR.Object.Syntax.Raw.Model using
   ( RawSyntaxCwF
   )
 
@@ -146,10 +146,12 @@ import DPRLR.Simplicial.PreorderLocalization using
   ; ηᴾ
   ; rec
   ; rec-unique
+  ; ηᴾ-universal
   ; isPreorderP
   ; isPreorder→isSet
   ; isPreorder→isThin
   ; isPreorder→isSegal
+  ; isSetThinSegal→isPreorder
   )
 
 {-
@@ -157,7 +159,7 @@ import DPRLR.Simplicial.PreorderLocalization using
     Raw substitutions and terms are reflected into the set, thin, Segal
     subuniverse.
 -}
-import DPRLR.Object.Simple.Syntax.LocalizedSyntax using
+import DPRLR.Object.Syntax.Localized.Base using
   ( Subᴾ
   ; Tmᴾ
   ; ηSubᴾ
@@ -174,7 +176,7 @@ import DPRLR.Object.Simple.Syntax.LocalizedSyntax using
     Section 2.2.
     The reflected syntax inherits all CwF operations and directed computation laws.
 -}
-import DPRLR.Object.Simple.Syntax.LocalizedSyntax using
+import DPRLR.Object.Syntax.Localized.Base using
   ( idᴾ
   ; _∘ᴾ_
   ; ε-subᴾ
@@ -211,20 +213,22 @@ import DPRLR.Object.Simple.Syntax.LocalizedSyntax using
     Section 2.2.
     The localized syntax is packaged as the directed syntactic model.
 -}
-import DPRLR.Object.Simple.Syntax.LocalizedModel using
+import DPRLR.Object.Syntax.Localized.Model using
   ( LocalizedSyntaxCwF
-  ; LocalizedSyntaxDirected
   ; LocalizedSyntaxModel
   )
 
-{-
-    Section 2.2.
-    The final syntactic model used by gluing is the localized directed model.
--}
-import DPRLR.Object.Simple.InitialModel using
-  ( SyntaxCwF
-  ; SyntaxDirected
-  ; SyntaxModel
+import DPRLR.Object.Model.Morphism.Base using
+  ( SimpleMorphism
+  ; isInitialDirected
+  )
+
+import DPRLR.Object.Syntax.Initiality.Raw using
+  ( raw-syntax-isInitial
+  )
+
+import DPRLR.Object.Syntax.Initiality.Localized using
+  ( localized-syntax-isInitial
   )
 
 {-
@@ -268,13 +272,11 @@ import DPRLR.Simplicial.Contravariant using
 
 {-
     Lemma 3.5.
-    Inequalities at products and Σ-types are equivalent to componentwise inequalities.
+    Inequalities at products and Σ-types are constructed componentwise.
 -}
-import DPRLR.Simplicial.ProductExtensionality using
+import DPRLR.Simplicial.Product using
   ( HomP×
-  ; HomP×≃
   ; HomPΣ
-  ; HomPΣ≃
   ; Σ≤
   )
 
@@ -282,8 +284,13 @@ import DPRLR.Simplicial.ProductExtensionality using
     Lemma 3.6.
     Representable families are contravariant.
 -}
-import DPRLR.Simplicial.Representable using
+import DPRLR.Simplicial.Contravariant using
   ( representable-isContravariant
+  )
+
+import DPRLR.Simplicial.Contravariant using
+  ( contravariant-total-isSegal
+  ; contravariant-total-isThin
   )
 
 {-
@@ -299,9 +306,8 @@ import DPRLR.Simplicial.Representable using
         The ∞-category of ∞-categories in simplicial type theory. 
 -}
 import DPRLR.Simplicial.Discrete using
-  ( idtoarr
-  ; isDiscrete
-  ; arr→path
+  ( isDiscrete
+  ; hom→path
   ; hom-to-isContr
   ; Bool₂-isDiscrete
   )
@@ -321,7 +327,6 @@ import DPRLR.Simplicial.Contravariant using
   ; contravariant-Π
   )
 
-
 {-
   Section 3 and Appendix B. Unary gluing and boolean canonicity.
 -}
@@ -330,7 +335,7 @@ import DPRLR.Simplicial.Contravariant using
     Glued contexts, substitutions, types, terms, and term inequalities refine
     the base CwF.
 -}
-import DPRLR.Gluing.Simple.Judgment using
+import DPRLR.Gluing.LogicalRelations.Judgment using
   ( GluCtx
   ; GluSub
   ; GluTy
@@ -343,7 +348,7 @@ import DPRLR.Gluing.Simple.Judgment using
     Section 3.1, Section 3.3 and Appendix B.2.
     The gluing model validates substitution and context-extension structure.
 -}
-import DPRLR.Gluing.Simple.Substitution using
+import DPRLR.Gluing.LogicalRelations.Substitution using
   ( εᵍ
   ; ε-subᵍ
   ; εηᵍ
@@ -368,7 +373,7 @@ import DPRLR.Gluing.Simple.Substitution using
     Section 3.2.
     Products in the gluing model.
 -}
-import DPRLR.Gluing.Simple.Product using
+import DPRLR.Gluing.LogicalRelations.Product using
   ( PROD
   ; PAIR
   ; FST
@@ -385,7 +390,7 @@ import DPRLR.Gluing.Simple.Product using
     Section 3.3.
     Functions in the gluing model.
 -}
-import DPRLR.Gluing.Simple.Function using
+import DPRLR.Gluing.LogicalRelations.Function using
   ( FUN
   ; APP
   ; LAM
@@ -399,7 +404,7 @@ import DPRLR.Gluing.Simple.Function using
     Section 3.4.
     The boolean predicate states that a closed boolean reduces to a canonical boolean.
 -}
-import DPRLR.Gluing.Simple.Bool using
+import DPRLR.Gluing.LogicalRelations.Bool using
   ( BOOL
   ; TRUE
   ; FALSE
@@ -432,6 +437,7 @@ import DPRLR.Gluing.DisplayedModel using
   ; PRODᴰ
   ; FUNᴰ
   ; GluingDisplayed
+  ; GluingDirectedModel
   )
 
 {-

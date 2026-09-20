@@ -1,4 +1,4 @@
-module DPRLR.Simplicial.FunctionExtensionality where
+module DPRLR.Simplicial.Function where
 
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Equiv

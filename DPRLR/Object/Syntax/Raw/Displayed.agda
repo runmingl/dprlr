@@ -1,12 +1,11 @@
-module DPRLR.Object.Simple.Syntax.Displayed where
+module DPRLR.Object.Syntax.Raw.Displayed where
 
 open import Cubical.Foundations.Prelude hiding (Sub ; _▷_ ; fst ; snd)
 open import Cubical.Data.Sigma using () renaming (fst to proj₁ ; snd to proj₂)
 
-open import DPRLR.Simplicial.Hom
-open import DPRLR.Object.Simple.Displayed
-open import DPRLR.Object.Simple.Syntax.RawModel
-open import DPRLR.Object.Simple.Syntax.Base
+open import DPRLR.Object.Model.DisplayedModel
+open import DPRLR.Object.Syntax.Raw.Model
+open import DPRLR.Object.Syntax.Raw.Base
 
 module _ {ℓD₀ ℓD₁ : Level}
   (𝓓 : DisplayedSimpleCwF ℓD₀ ℓD₁ RawSyntaxCwF) where

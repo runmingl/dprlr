@@ -9,9 +9,8 @@ proofs described in the paper, and is structured as follows:
 - The `Gluing` directory contains the definition of the gluing construction (a.k.a proof-relevant logical relations) on the inductively defined object language as a displayed model, and the proof of the fundamental lemma.
 
 _AI disclosure_   
-This artifact was written with the assistant of an AI agent codex. In particular, we find the AI tool very effective in
-generating repetitive code patterns such as ones in `LocalizedCoherence.agda`, as well as in dealing with the
-``transport hell'' such as that found in the substitutions clauses of the logical relations proof. This allowed us (human) to
+This artifact was written with the assistant of an AI agent Codex. In particular, we find the AI tool effective in
+generating repetitive code patterns, of which there are many in a formalization of metatheory. This allowed us (human) to
 focus on the more interesting parts of the formalization, such as the definition of the gluing construction and the
 directed infrastructure. This artifact should therefore be seen only as a proof of concept, and we do not claim this is
 the ideal way to formalize CwF style intrinsic syntax in Agda. 

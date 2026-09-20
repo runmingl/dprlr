@@ -1,11 +1,16 @@
-module DPRLR.Object.Simple.Model where
+module DPRLR.Object.Model.Model where
 
 open import Cubical.Foundations.Prelude hiding (Sub ; _▷_ ; fst ; snd ; lift)
+open import Cubical.Foundations.Equiv using (_≃_)
+open import Cubical.Foundations.Isomorphism using (iso ; isoToEquiv)
+open import Cubical.Data.Sigma using (_×_ ; _,_)
 
 open import DPRLR.Simplicial.Hom
 open import DPRLR.Simplicial.Segal
+open import DPRLR.Simplicial.PreorderLocalization
+  using (isPreorder ; isSetThinSegal→isPreorder ; isPreorder≃ ; isPreorder×)
 
-record SimpleCwF (ℓM : Level) : Type (ℓ-suc ℓM) where
+record SimpleCwF (ℓS ℓM : Level) : Type (ℓ-suc (ℓ-max ℓS ℓM)) where
   infixl 30 _∘_
   infixl 40 _[_]Tm
   infixr 35 _▷_
@@ -13,8 +18,8 @@ record SimpleCwF (ℓM : Level) : Type (ℓ-suc ℓM) where
   infix  5 ⟨_,_⟩
 
   field
-    Ctx : Type ℓM
-    Ty  : Type ℓM
+    Ctx : Type ℓS
+    Ty  : Type ℓS
     Sub : Ctx → Ctx → Type ℓM
     Tm  : Ctx → Ty → Type ℓM
 
@@ -65,6 +70,15 @@ record SimpleCwF (ℓM : Level) : Type (ℓ-suc ℓM) where
       {Γ Δ Θ : Ctx} {A : Ty}
       (σ : Sub Γ Δ) (t : Tm Γ A) (ρ : Sub Θ Γ)
       → ⟨ σ , t ⟩ ∘ ρ ≡ ⟨ σ ∘ ρ , t [ ρ ]Tm ⟩
+
+  ▷-universal : (Γ Δ : Ctx) (A : Ty)
+    → (Sub Γ Δ × Tm Γ A) ≃ Sub Γ (Δ ▷ A)
+  ▷-universal Γ Δ A = isoToEquiv (iso
+    (λ { (σ , t) → ⟨ σ , t ⟩ })
+    (λ σ → (p ∘ σ) , (q [ σ ]Tm))
+    (λ σ → sym (⟨⟩-∘ p q σ)
+      ∙ cong (λ τ → τ ∘ σ) ▷η ∙ id-left σ)
+    (λ { (σ , t) i → p-⟨⟩ σ t i , q-⟨⟩ σ t i }))
 
   lift :
     {Γ Δ : Ctx} {A : Ty}
@@ -199,34 +213,39 @@ record SimpleCwF (ℓM : Level) : Type (ℓ-suc ℓM) where
       Tm-∘ N (lift {A = A} σ) ⟨ id , M ⟩
       ∙ cong (λ ρ → N [ ρ ]Tm) (lift-⟨id⟩ σ M)
 
-record SimpleDirectedStructure {ℓM : Level}
-  (𝓜 : SimpleCwF ℓM) : Type (ℓ-suc ℓM) where
-  open SimpleCwF 𝓜
+record SimpleDirectedCwF (ℓS ℓM : Level) : Type (ℓ-suc (ℓ-max ℓS ℓM)) where
+  infixr 0 _≤⟨_⟩_
+  infix 1 _∎≤
 
   field
-    tm-set : (Γ : Ctx) (A : Ty) → isSet (Tm Γ A)
+    cwf : SimpleCwF ℓS ℓM
+
+  open SimpleCwF cwf public
+
+  field
     sub-set : (Γ Δ : Ctx) → isSet (Sub Γ Δ)
+    tm-set : (Γ : Ctx) (A : Ty) → isSet (Tm Γ A)
     tm-thin : (Γ : Ctx) (A : Ty) → isThin (Tm Γ A)
     tm-segal : (Γ : Ctx) (A : Ty) → isSegal (Tm Γ A)
 
-record SimpleDirectedCwF (ℓM : Level) : Type (ℓ-suc ℓM) where
-  field
-    cwf : SimpleCwF ℓM
-    directed : SimpleDirectedStructure cwf
+  tm-local : (Γ : Ctx) (A : Ty) → isPreorder (Tm Γ A)
+  tm-local Γ A = isSetThinSegal→isPreorder
+    (tm-set Γ A) (tm-thin Γ A) (tm-segal Γ A)
 
-  open SimpleCwF cwf public
-  open SimpleDirectedStructure directed public
+  sub-extension-local : (Γ Δ : Ctx) (A : Ty)
+    → isPreorder (Sub Γ Δ) → isPreorder (Sub Γ (Δ ▷ A))
+  sub-extension-local Γ Δ A localΔ =
+    isPreorder≃ (▷-universal Γ Δ A) (isPreorder× localΔ (tm-local Γ A))
+
+  tm-∙ : {Γ : Ctx} {A : Ty} {t u v : Tm Γ A}
+    → t ≤ u → u ≤ v → t ≤ v
+  tm-∙ {Γ} {A} = segal-compose (tm-segal Γ A)
+
+  _≤⟨_⟩_ : {Γ : Ctx} {A : Ty} (t : Tm Γ A) {u v : Tm Γ A}
+    → t ≤ u → u ≤ v → t ≤ v
+  t ≤⟨ h ⟩ k = tm-∙ h k
+
+  _∎≤ : {Γ : Ctx} {A : Ty} (t : Tm Γ A) → t ≤ t
+  t ∎≤ = hom-refl t
 
 open SimpleDirectedCwF public
-
-tm-∙ :
-  {ℓM : Level}
-  (𝓜 : SimpleDirectedCwF ℓM)
-  {Γ : SimpleDirectedCwF.Ctx 𝓜}
-  {A : SimpleDirectedCwF.Ty 𝓜}
-  {t u v : SimpleDirectedCwF.Tm 𝓜 Γ A}
-  → t ≤ u
-  → u ≤ v
-  → t ≤ v
-tm-∙ 𝓜 {Γ = Γ} {A = A} =
-  segal-compose (SimpleDirectedCwF.tm-segal 𝓜 Γ A)

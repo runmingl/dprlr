@@ -1,7 +1,7 @@
 module DPRLR.Gluing.DisplayedModel where
 
 open import Cubical.Foundations.Prelude
-  using (Level ; Type ; ℓ-suc ; isSet ; isProp→isSet)
+  using (Level ; Type ; ℓ-suc ; ℓ-max ; isSet ; isProp→isSet)
 open import Cubical.Foundations.HLevels
   using (isSetΣ ; isSetΠ2 ; isSet×)
 open import Cubical.Data.Bool.Properties using (isSetBool)
@@ -14,14 +14,15 @@ open import DPRLR.Simplicial.Contravariant
     ( isContravariant
     ; contravariant-reindex
     ; contravariant-Π
+    ; contravariant-total-isThin
+    ; contravariant-total-isSegal
     )
-open import DPRLR.Object.Simple.Model
-open import DPRLR.Object.Simple.Displayed
+open import DPRLR.Object.Model.DisplayedModel
 open import DPRLR.Gluing.GluingModel
-open import DPRLR.Gluing.Simple.Judgment using (_≤ᵍ_ ; r° ; r∙ ; ≤→≤ᵍ)
-open import DPRLR.Gluing.Simple.Bool using (BOOL∙ ; ⌜_⌝)
+open import DPRLR.Gluing.LogicalRelations.Judgment using (_≤ᵍ_ ; r° ; r∙ ; ≤→≤ᵍ)
+open import DPRLR.Gluing.LogicalRelations.Bool using (⌜_⌝)
 
-module _ {ℓM : Level} (𝓜 : SimpleDirectedCwF ℓM) where
+module _ {ℓS ℓM : Level} (𝓜 : SimpleDirectedCwF ℓS ℓM) where
 
   open SimpleDirectedCwF 𝓜
     renaming
@@ -29,7 +30,6 @@ module _ {ℓM : Level} (𝓜 : SimpleDirectedCwF ℓM) where
       ; Ty to Tyₘ
       ; Sub to Subₘ
       ; Tm to Tmₘ
-      ; id to idₘ
       ; ε to εₘ
       ; _▷_ to _▷ₘ_
       ; p to pₘ
@@ -91,6 +91,23 @@ module _ {ℓM : Level} (𝓜 : SimpleDirectedCwF ℓM) where
     → GluTm 𝓜 (CTX Γ° Γ∙) (TY A° A∙)
   GluTm.M° (TM M° M∙) = M°
   GluTm.M∙ (TM M° M∙) = M∙
+
+  SUBPredᴰ :
+    {Γ° Δ° : Ctxₘ}
+    → CtxPred Γ°
+    → CtxPred Δ°
+    → Subₘ Γ° Δ°
+    → Type ℓM
+  SUBPredᴰ {Γ° = Γ°} Γ∙ Δ∙ σ° =
+    (γ° : Subₘ εₘ Γ°) (γ∙ : CtxPred.Γ∙ Γ∙ γ°)
+    → CtxPred.Γ∙ Δ∙ (σ° ∘ₘ γ°)
+
+  SUBPredᴰ-isSet :
+    {Γ° Δ° : Ctxₘ}
+    (Γ∙ : CtxPred Γ°) (Δ∙ : CtxPred Δ°) (σ° : Subₘ Γ° Δ°)
+    → isSet (SUBPredᴰ Γ∙ Δ∙ σ°)
+  SUBPredᴰ-isSet Γ∙ Δ∙ σ° =
+    isSetΠ2 λ γ° _ → CtxPred.Γ∙-isSet Δ∙ (σ° ∘ₘ γ°)
 
   TMPredᴰ :
     {Γ° : Ctxₘ} {A° : Tyₘ}
@@ -230,13 +247,8 @@ module _ {ℓM : Level} (𝓜 : SimpleDirectedCwF ℓM) where
     record
       { Ctx∙ = CtxPred
       ; Ty∙ = TyPred
-      ; Sub∙ = λ {Γ = Γ°} Γ∙ Δ∙ σ° →
-          (γ° : Subₘ εₘ Γ°)
-          → CtxPred.Γ∙ Γ∙ γ°
-          → CtxPred.Γ∙ Δ∙ (σ° ∘ₘ γ°)
-      ; Tm∙ = λ {Γ = Γ°} Γ∙ A∙ M° →
-          (γ° : Subₘ εₘ Γ°) (γ∙ : CtxPred.Γ∙ Γ∙ γ°)
-          → TyPred.A∙ A∙ (M° [ γ° ]Tmₘ)
+      ; Sub∙ = SUBPredᴰ
+      ; Tm∙ = TMPredᴰ
       ; id∙ = λ {Γ = Γ°} {Γ∙ = Γ∙} →
           GluSub.σ∙ (idᵍ 𝓜 (CTX Γ° Γ∙))
       ; _∘∙_ = λ {Γ∙ = Γ∙} {Δ∙ = Δ∙} {Θ∙ = Θ∙} {σ = σ°} {τ = τ°} τ∙ σ∙ →
@@ -461,3 +473,20 @@ module _ {ℓM : Level} (𝓜 : SimpleDirectedCwF ℓM) where
               {B = TY B° B∙}
               (funTmᴰ Γ∙ A∙ B∙ F° F∙))
       }
+
+  GluingDirectedModel : SimpleDirectedCwF (ℓ-max ℓS (ℓ-suc ℓM)) ℓM
+  GluingDirectedModel = record
+    { cwf = TotalSimpleCwF GluingDisplayed
+    ; sub-set = λ (Γ , Γ∙) (Δ , Δ∙) →
+        isSetΣ (M.sub-set Γ Δ) (SUBPredᴰ-isSet Γ∙ Δ∙)
+    ; tm-set = λ (Γ , Γ∙) (A , A∙) →
+        isSetΣ (M.tm-set Γ A) (TMPredᴰ-isSet Γ∙ A∙)
+    ; tm-thin = λ (Γ , Γ∙) (A , A∙) →
+        contravariant-total-isThin (M.tm-thin Γ A)
+          (TMPredᴰ-contravariant Γ∙ A∙) (TMPredᴰ-isSet Γ∙ A∙)
+    ; tm-segal = λ (Γ , Γ∙) (A , A∙) →
+        contravariant-total-isSegal (M.tm-segal Γ A)
+          (TMPredᴰ-contravariant Γ∙ A∙)
+    }
+    where
+    module M = SimpleDirectedCwF 𝓜

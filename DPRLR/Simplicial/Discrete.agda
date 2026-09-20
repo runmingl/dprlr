@@ -3,7 +3,8 @@ module DPRLR.Simplicial.Discrete where
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Equiv
 open import Cubical.Foundations.HLevels
-open import Cubical.Foundations.Isomorphism
+open import Cubical.Foundations.Isomorphism using (isoToEquiv)
+open import Cubical.Foundations.Path using (symIso)
 open import Cubical.Data.Bool.Base renaming (Bool to Bool₂)
 open import Cubical.Data.Sigma
 
@@ -14,49 +15,27 @@ private
     ℓ : Level
     A : Type ℓ
 
-idtoarr :
-  {x y : A}
-  → x ≡ y
-  → x ≤ y
-idtoarr =
-  path→hom
-
-idtoarr-refl :
-  {x : A}
-  → idtoarr (refl {x = x}) ≡ hom-refl x
-idtoarr-refl {x = x} =
-  substRefl {B = λ y → x ≤ y} (hom-refl x)
-
 isDiscrete : Type ℓ → Type ℓ
 isDiscrete A =
-  (x y : A) → isEquiv (idtoarr {A = A} {x = x} {y = y})
+  (x y : A) → isEquiv (path→hom {A = A} {x = x} {y = y})
 
-arr→path :
+hom→path :
   {A : Type ℓ}
   → isDiscrete A
   → {x y : A}
   → x ≤ y
   → x ≡ y
-arr→path d {x = x} {y = y} =
+hom→path d {x = x} {y = y} =
   invIsEq (d x y)
 
-idtoarr-arr→path :
+path→hom-hom→path :
   {A : Type ℓ}
   → (d : isDiscrete A)
   → {x y : A}
   → (f : x ≤ y)
-  → idtoarr (arr→path d f) ≡ f
-idtoarr-arr→path d {x = x} {y = y} =
+  → path→hom (hom→path d f) ≡ f
+path→hom-hom→path d {x = x} {y = y} =
   secIsEq (d x y)
-
-path-to-isContr :
-  {A : Type ℓ}
-  → (a : A)
-  → isContr (Σ A (λ x → x ≡ a))
-path-to-isContr a =
-  isOfHLevelRespectEquiv 0
-    (Σ-cong-equiv-snd (λ _ → isoToEquiv (iso sym sym (λ _ → refl) (λ _ → refl))))
-    (isContrSingl a)
 
 hom-to-isContr :
   {A : Type ℓ}
@@ -65,8 +44,14 @@ hom-to-isContr :
   → isContr (Σ A (λ x → x ≤ a))
 hom-to-isContr d a =
   isOfHLevelRespectEquiv 0
-    (Σ-cong-equiv-snd (λ x → idtoarr , d x a))
-    (path-to-isContr a)
+    (Σ-cong-equiv-snd λ x →
+        a ≡ x
+      ≃⟨ isoToEquiv symIso ⟩
+        x ≡ a
+      ≃⟨ path→hom , d x a ⟩
+        x ≤ a
+      ■)
+    (isContrSingl a)
 
 postulate
   Bool₂-isDiscrete : isDiscrete Bool₂

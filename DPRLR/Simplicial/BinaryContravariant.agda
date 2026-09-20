@@ -1,6 +1,5 @@
 module DPRLR.Simplicial.BinaryContravariant where
 
-open import Cubical.Foundations.Prelude
 open import Cubical.Data.Sigma
 
 open import DPRLR.Simplicial.Contravariant

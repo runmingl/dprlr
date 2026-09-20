@@ -6,13 +6,17 @@ open import Cubical.Foundations.GroupoidLaws
 open import Cubical.Foundations.HLevels
 open import Cubical.Foundations.Isomorphism
 open import Cubical.Foundations.Path
+open import Cubical.Foundations.Transport using (substCommSlice ; substInPathsL)
 open import Cubical.Data.Sigma
 
 open import DPRLR.Simplicial.Hom
-open import DPRLR.Simplicial.Interval
 open import DPRLR.Simplicial.Discrete
-open import DPRLR.Simplicial.FunctionExtensionality
-open import DPRLR.Simplicial.ProductExtensionality
+open import DPRLR.Simplicial.Function
+open import DPRLR.Simplicial.Product
+open import DPRLR.Simplicial.Segal using (isSegal)
+open import DPRLR.Simplicial.PreorderLocalization
+  using (isPreorder ; isPreorder→isSet ; isPreorder→isThin ; isPreorder→isSegal
+        ; isSetThinSegal→isPreorder)
 
 private
   variable
@@ -62,72 +66,51 @@ contravariant-universal-from c {f = f} {v = v} u≡f*v =
   subst (λ u → _ ⊢ u ≤[ f ] v) (sym u≡f*v)
     (contravariant-lift-hom c f v)
 
-contravariant-universal-Iso :
-  {C : A → Type ℓ'} (c : isContravariant C)
-  → {x y : A} {f : x ≤ y} {u : C x} {v : C y}
-  → Iso (C ⊢ u ≤[ f ] v) (u ≡ contrav-transport c f v)
-Iso.fun (contravariant-universal-Iso c) =
-  contravariant-universal-to c
-Iso.inv (contravariant-universal-Iso c) =
-  contravariant-universal-from c
-Iso.rightInv
-  (contravariant-universal-Iso {C = C} c {x = x} {f = f} {u = u} {v = v})
-  p =
-  cong (cong fst) (total-isSet _ _ α β)
-  where
-  Fiber : C x → Type _
-  Fiber u =
-    C ⊢ u ≤[ f ] v
-
-  total-isSet : isSet (Σ (C x) Fiber)
-  total-isSet =
-    isProp→isSet (isContr→isProp (contrav-lift c f v))
-
-  center : Σ (C x) Fiber
-  center =
-    contrav-lift c f v .fst
-
-  q : Fiber u
-  q =
-    contravariant-universal-from c p
-
-  α : (u , q) ≡ center
-  α =
-    isContr→isProp (contrav-lift c f v) (u , q) center
-
-  β : (u , q) ≡ center
-  β =
-    sym (ΣPathP (sym p , subst-filler Fiber (sym p) (snd center)))
-Iso.leftInv
-  (contravariant-universal-Iso {C = C} c {x = x} {f = f} {u = u} {v = v})
-  q =
-  fromPathP (snd (PathPΣ (sym α)))
-  where
-  Fiber : C x → Type _
-  Fiber u =
-    C ⊢ u ≤[ f ] v
-
-  center : Σ (C x) Fiber
-  center =
-    contrav-lift c f v .fst
-
-  α : (u , q) ≡ center
-  α =
-    isContr→isProp (contrav-lift c f v) (u , q) center
-
 contravariant-universal≃ :
   {C : A → Type ℓ'} (c : isContravariant C)
   → {x y : A} {f : x ≤ y} {u : C x} {v : C y}
   → (C ⊢ u ≤[ f ] v) ≃ (u ≡ contrav-transport c f v)
-contravariant-universal≃ c =
-  isoToEquiv (contravariant-universal-Iso c)
+contravariant-universal≃ {C = C} c {x = x} {f = f} {u = u} {v = v} =
+  isoToEquiv contravariant-universal-Iso
+  where
+  Fiber : C x → Type _
+  Fiber u = C ⊢ u ≤[ f ] v
 
-contravariant-universal-to-isEquiv :
-  {C : A → Type ℓ'} (c : isContravariant C)
-  → {x y : A} {f : x ≤ y} {u : C x} {v : C y}
-  → isEquiv (contravariant-universal-to c {f = f} {u = u} {v = v})
-contravariant-universal-to-isEquiv c =
-  contravariant-universal≃ c .snd
+  Lifts : Type _
+  Lifts = Σ (C x) Fiber
+
+  chosen-lift : Lifts
+  chosen-lift = contrav-lift c f v .fst
+
+  lift≡chosen : (w : Lifts) → w ≡ chosen-lift
+  lift≡chosen w = isContr→isProp (contrav-lift c f v) w chosen-lift
+
+  lifts-isSet : isSet Lifts
+  lifts-isSet = isProp→isSet (isContr→isProp (contrav-lift c f v))
+
+  to-from : (p : u ≡ contrav-transport c f v)
+    → contravariant-universal-to c (contravariant-universal-from c {f = f} p) ≡ p
+  to-from p =
+    cong (cong fst) (lifts-isSet _ _ contraction-path transport-path)
+    where
+    q : Fiber u
+    q = contravariant-universal-from c p
+
+    contraction-path : (u , q) ≡ chosen-lift
+    contraction-path = lift≡chosen (u , q)
+
+    transport-path : (u , q) ≡ chosen-lift
+    transport-path =
+      sym (ΣPathP (sym p , subst-filler Fiber (sym p) (snd chosen-lift)))
+
+  from-to : (q : Fiber u)
+    → contravariant-universal-from c (contravariant-universal-to c q) ≡ q
+  from-to q =
+    fromPathP (snd (PathPΣ (sym (lift≡chosen (u , q)))))
+
+  contravariant-universal-Iso : Iso (Fiber u) (u ≡ contrav-transport c f v)
+  contravariant-universal-Iso =
+    iso (contravariant-universal-to c) (contravariant-universal-from c) to-from from-to
 
 contravariant-transport-refl :
   {C : A → Type ℓ'} (c : isContravariant C)
@@ -139,137 +122,89 @@ contravariant-transport-refl c {x = x} v =
       {f = hom-refl x}
       (hom-refl v))
 
-contravariant-fiber-Hom≃Path :
-  {C : A → Type ℓ'} (c : isContravariant C)
-  → {x : A} (u v : C x)
-  → (u ≤ v) ≃ (u ≡ v)
-contravariant-fiber-Hom≃Path c {x = x} u v =
-  compEquiv
-    (contravariant-universal≃ c {f = hom-refl x} {u = u} {v = v})
-    ((_∙ contravariant-transport-refl c v)
-    , compPathr-isEquiv (contravariant-transport-refl c v))
-
-contravariant-fiber-Hom≃Path-idtoarr :
-  {C : A → Type ℓ'} (c : isContravariant C)
-  → {x : A} {u v : C x}
-  → (p : u ≡ v)
-  → contravariant-fiber-Hom≃Path c u v .fst (idtoarr p) ≡ p
-contravariant-fiber-Hom≃Path-idtoarr c {x = x} {u = u} =
-  J
-    (λ v p → contravariant-fiber-Hom≃Path c u v .fst (idtoarr p) ≡ p)
-    (cong (contravariant-fiber-Hom≃Path c u u .fst) idtoarr-refl
-      ∙ rCancel (contravariant-universal-to c {f = hom-refl x} (hom-refl u)))
-
-contravariant-fiber-idtoarr≡inv :
-  {C : A → Type ℓ'} (c : isContravariant C)
-  → {x : A} {u v : C x}
-  → (p : u ≡ v)
-  → idtoarr p ≡ invEq (contravariant-fiber-Hom≃Path c u v) p
-contravariant-fiber-idtoarr≡inv c {u = u} {v = v} p =
-  isoFunInjective
-    (equivToIso (contravariant-fiber-Hom≃Path c u v))
-    (idtoarr p)
-    (invEq (contravariant-fiber-Hom≃Path c u v) p)
-    (contravariant-fiber-Hom≃Path-idtoarr c p
-      ∙ sym (secEq (contravariant-fiber-Hom≃Path c u v) p))
+contravariant-transport-cong :
+  {C : A → Type ℓ'} (c : isContravariant C) → isThin A
+  → {x x' y y' : A} (p : x ≡ x') (q : y ≡ y')
+  → (f : x ≤ y) (g : x' ≤ y')
+  → {v : C y} {v' : C y'} → PathP (λ i → C (q i)) v v'
+  → PathP (λ i → C (p i)) (contrav-transport c f v) (contrav-transport c g v')
+contravariant-transport-cong c thin p q f g v i =
+  contrav-transport c (isProp→PathP (λ j → thin (p j) (q j)) f g i) (v i)
 
 contravariant-fiber-isDiscrete :
   {C : A → Type ℓ'} (c : isContravariant C)
   → (x : A)
   → isDiscrete (C x)
-contravariant-fiber-isDiscrete c x u v =
+contravariant-fiber-isDiscrete {C = C} c x u v =
   subst isEquiv
-    (sym (funExt (contravariant-fiber-idtoarr≡inv c)))
-    (invEquiv (contravariant-fiber-Hom≃Path c u v) .snd)
-
-HomP-isProp-contravariant :
-  {C : A → Type ℓ'} (c : isContravariant C)
-  → ((x : A) → isSet (C x))
-  → {x y : A} (f : x ≤ y) (u : C x) (v : C y)
-  → isProp (C ⊢ u ≤[ f ] v)
-HomP-isProp-contravariant {C = C} c Cset {x = x} f u v =
-  isPropRetract to from from-to fiber-prop
+    (sym (funExt path→hom≡inv))
+    (invEquiv (Hom≃Path u v) .snd)
   where
-  Total : Type _
-  Total =
-    Σ (C x) (λ u′ → C ⊢ u′ ≤[ f ] v)
+  Hom≃Path : (u v : C x) → (u ≤ v) ≃ (u ≡ v)
+  Hom≃Path u v =
+      u ≤ v
+    ≃⟨ contravariant-universal≃ c {f = hom-refl x} ⟩
+      u ≡ contrav-transport c (hom-refl x) v
+    ≃⟨ (_∙ contravariant-transport-refl c v)
+        , compPathr-isEquiv (contravariant-transport-refl c v) ⟩
+      u ≡ v
+    ■
 
-  Fiber : Type _
-  Fiber =
-    Σ Total (λ w → fst w ≡ u)
+  Hom≃Path-path→hom : {u v : C x} (p : u ≡ v)
+    → Hom≃Path u v .fst (path→hom p) ≡ p
+  Hom≃Path-path→hom {u = u} {v = v} p =
+      encode v (path→hom p)
+    ≡⟨ sym (substCommSlice (λ v → u ≤ v) (λ v → u ≡ v) encode p (hom-refl u)) ⟩
+      subst (λ v → u ≡ v) p (encode u (hom-refl u))
+    ≡⟨ cong (subst (λ v → u ≡ v) p)
+        (rCancel (contravariant-universal-to c {f = hom-refl x} (hom-refl u))) ⟩
+      subst (λ v → u ≡ v) p refl
+    ≡⟨ substInPathsL p refl ⟩
+      refl ∙ p
+    ≡⟨ sym (lUnit p) ⟩
+      p
+    ∎
+    where
+    encode : (v : C x) → u ≤ v → u ≡ v
+    encode v = Hom≃Path u v .fst
 
-  to :
-    C ⊢ u ≤[ f ] v
-    → Fiber
-  to q =
-    (u , q) , refl
+  path→hom≡inv : {u v : C x} (p : u ≡ v)
+    → path→hom p ≡ invEq (Hom≃Path u v) p
+  path→hom≡inv {u = u} {v = v} p =
+    isoFunInjective
+      (equivToIso (Hom≃Path u v))
+      (path→hom p)
+      (invEq (Hom≃Path u v) p)
+      (
+          Hom≃Path u v .fst (path→hom p)
+        ≡⟨ Hom≃Path-path→hom p ⟩
+          p
+        ≡⟨ sym (secEq (Hom≃Path u v) p) ⟩
+          Hom≃Path u v .fst (invEq (Hom≃Path u v) p)
+        ∎)
 
-  from :
-    Fiber
-    → C ⊢ u ≤[ f ] v
-  from ((u′ , q) , p) =
-    subst (λ z → C ⊢ z ≤[ f ] v) p q
-
-  from-to :
-    (q : C ⊢ u ≤[ f ] v)
-    → from (to q) ≡ q
-  from-to q =
-    substRefl {B = λ z → C ⊢ z ≤[ f ] v} q
-
-  fiber-prop : isProp Fiber
-  fiber-prop =
-    isPropΣ
-      (isContr→isProp (contrav-lift c f v))
-      (λ w → Cset x (fst w) u)
-
-contravariant-Lift :
-  {A : Type ℓ} {C : A → Type ℓ'}
+contravariant-equiv :
+  {C : A → Type ℓ'} {D : A → Type ℓ''}
+  → ((x : A) → C x ≃ D x)
   → isContravariant C
-  → isContravariant (λ x → Lift {j = ℓ''} (C x))
-contravariant-Lift {A = A} {C = C} c .contrav-lift {x = x} f v =
-  isContrRetract to from from-to (contrav-lift c f (lower v))
+  → isContravariant D
+contravariant-equiv {C = C} {D = D} e c .contrav-lift {x = x} {y = y} f v =
+  subst (λ v → isContr (Σ (D x) (λ u → D ⊢ u ≤[ f ] v)))
+    (secEq (e y) v)
+    (isOfHLevelRespectEquiv 0 (lifts≃ (invEq (e y) v))
+      (contrav-lift c f (invEq (e y) v)))
   where
-  LiftC : A → Type _
-  LiftC x = Lift (C x)
+  hom≃ : (u : C x) (w : C y)
+    → (C ⊢ u ≤[ f ] w) ≃ (D ⊢ e x .fst u ≤[ f ] e y .fst w)
+  hom≃ u w =
+    Σ-cong-equiv (equivΠCod (λ i → e (hom-path f i))) λ q →
+      ≃-× (congPathEquiv (λ i → e (left-endpoint f i)))
+          (congPathEquiv (λ i → e (right-endpoint f i)))
 
-  lower-HomP :
-    {x y : A} {h : x ≤ y}
-    {u : LiftC x} {v : LiftC y}
-    → LiftC ⊢ u ≤[ h ] v
-    → C ⊢ lower u ≤[ h ] lower v
-  lower-HomP q =
-    (λ i → lower (q .fst i))
-    , (λ i → lower (q .snd .fst i))
-    , (λ i → lower (q .snd .snd i))
-
-  lift-HomP :
-    {x y : A} {h : x ≤ y}
-    {u : C x} {v : C y}
-    → C ⊢ u ≤[ h ] v
-    → LiftC ⊢ lift u ≤[ h ] lift v
-  lift-HomP q =
-    (λ i → lift (q .fst i))
-    , (λ i → lift (q .snd .fst i))
-    , (λ i → lift (q .snd .snd i))
-
-  LiftTotal : Type _
-  LiftTotal =
-    Σ (LiftC x) (λ u → LiftC ⊢ u ≤[ f ] v)
-
-  Total : Type _
-  Total =
-    Σ (C x) (λ u → C ⊢ u ≤[ f ] lower v)
-
-  to : LiftTotal → Total
-  to (u , q) =
-    lower u , lower-HomP q
-
-  from : Total → LiftTotal
-  from (u , q) =
-    lift u , lift-HomP q
-
-  from-to : (w : LiftTotal) → from (to w) ≡ w
-  from-to w = refl
+  lifts≃ : (w : C y)
+    → Σ (C x) (λ u → C ⊢ u ≤[ f ] w)
+      ≃ Σ (D x) (λ u → D ⊢ u ≤[ f ] e y .fst w)
+  lifts≃ w = Σ-cong-equiv (e x) (λ u → hom≃ u w)
 
 contravariant-reindex :
   {A : Type ℓ} {B : Type ℓ'} {C : B → Type ℓ''}
@@ -325,114 +260,70 @@ contravariant-Σ {C = C} {D = D} c d .contrav-lift {x = x} {y = y} f (vC , vD) =
     isContrΣ (contrav-lift c f vC)
       (λ uh → contrav-lift d (Σ≤ f (snd uh)) vD)
 
-ΣLift-idtoarr-isContr :
-  {B : Type ℓ''} {C : B → A → Type ℓ'}
-  → ((b : B) → isContravariant (C b))
-  → {x y : A} (f : x ≤ y)
-  → {b₀ b₁ : B}
-  → (p : b₀ ≡ b₁)
-  → (v : C b₁ y)
-  → isContr (Σ (C b₀ x) (λ u → ΣLift {C = C} f (idtoarr p) u v))
-ΣLift-idtoarr-isContr {C = C} c {x = x} {y = y} f {b₀ = b₀} p =
-  J
-    (λ b₁ p →
-      (v : C b₁ y)
-      → isContr (Σ (C b₀ x) (λ u → ΣLift {C = C} f (idtoarr p) u v)))
-    base
-    p
-  where
-  base :
-    (v : C b₀ y)
-    → isContr (Σ (C b₀ x) (λ u → ΣLift {C = C} f (idtoarr refl) u v))
-  base v =
-    subst
-      (λ h → isContr (Σ (C b₀ x) (λ u → ΣLift {C = C} f h u v)))
-      (sym (idtoarr-refl {x = b₀}))
-      (contrav-lift (c b₀) f v)
-
-ΣLift-isContr :
-  {B : Type ℓ''} {C : B → A → Type ℓ'}
-  → isDiscrete B
-  → ((b : B) → isContravariant (C b))
-  → {x y : A} (f : x ≤ y)
-  → {b₀ b₁ : B}
-  → (h : b₀ ≤ b₁)
-  → (v : C b₁ y)
-  → isContr (Σ (C b₀ x) (λ u → ΣLift {C = C} f h u v))
-ΣLift-isContr {C = C} d c {x = x} f {b₀ = b₀} h v =
-  subst
-    (λ h′ → isContr (Σ (C b₀ x) (λ u → ΣLift {C = C} f h′ u v)))
-    (idtoarr-arr→path d h)
-    (ΣLift-idtoarr-isContr c f (arr→path d h) v)
-
-contravariant-discrete-indexed :
-  {B : Type ℓ''} {C : B → A → Type ℓ'}
-  → isDiscrete B
-  → ((b : B) → isContravariant (C b))
-  → isContravariant (λ xb → C (snd xb) (fst xb))
-contravariant-discrete-indexed {C = C} d c .contrav-lift {x = x , b₀} {y = y , b₁} r v =
-  ΣLift-isContr d c (hom-map fst r) (hom-map snd r) v
-
 contravariant-Σ-discrete :
   {B : Type ℓ''} {C : B → A → Type ℓ'}
   → isDiscrete B
   → ((b : B) → isContravariant (C b))
   → isContravariant (λ x → Σ B (λ b → C b x))
-contravariant-Σ-discrete {B = B} {C = C} d c =
-  contravariant-Σ
-    (contravariant-discrete d)
-    (contravariant-discrete-indexed {C = C} d c)
+contravariant-Σ-discrete {A = A} {B = B} {C = C} d c =
+  contravariant-Σ (contravariant-discrete d) indexed-contravariant
+  where
+  Indexed : A × B → Type _
+  Indexed (x , b) = C b x
+
+  indexed-contravariant : isContravariant Indexed
+  indexed-contravariant .contrav-lift {x = x , b₀} {y = y , b₁} r v =
+    subst (λ h → isContr (Lifts h v))
+      (path→hom-hom→path d h)
+      (path-index-lifts (hom→path d h) v)
+    where
+    f : x ≤ y
+    f = hom-map fst r
+
+    h : b₀ ≤ b₁
+    h = hom-map snd r
+
+    Lifts : {b : B} → b₀ ≤ b → C b y → Type _
+    Lifts h v = Σ (C b₀ x) (λ u → Indexed ⊢ u ≤[ Σ≤ f h ] v)
+
+    fixed-index-lifts : (v : C b₀ y) → isContr (Lifts (hom-refl b₀) v)
+    fixed-index-lifts v = contrav-lift (c b₀) f v
+
+    refl-index-lifts : (v : C b₀ y) → isContr (Lifts (path→hom refl) v)
+    refl-index-lifts v =
+      subst (λ h → isContr (Lifts h v))
+        (sym path→hom-refl) (fixed-index-lifts v)
+
+    path-index-lifts : {b : B} (p : b₀ ≡ b) (v : C b y)
+      → isContr (Lifts (path→hom p) v)
+    path-index-lifts p =
+      J (λ b p → (v : C b y) → isContr (Lifts (path→hom p) v))
+        refl-index-lifts
+        p
 
 contravariant-× :
   {C : A → Type ℓ'} {D : A → Type ℓ''}
   → isContravariant C
   → isContravariant D
   → isContravariant (λ x → C x × D x)
-contravariant-× {C = C} {D = D} c d .contrav-lift {x = x} {y = y} f (vC , vD) =
-  isContrRetract to from from-to component-lifts
-  where
-  ProductLift : Type _
-  ProductLift =
-    Σ (C x × D x)
-      (λ u → (λ z → C z × D z) ⊢ u ≤[ f ] (vC , vD))
-
-  ComponentLifts : Type _
-  ComponentLifts =
-    Σ (Σ (C x) (λ uC → C ⊢ uC ≤[ f ] vC))
-      (λ _ → Σ (D x) (λ uD → D ⊢ uD ≤[ f ] vD))
-
-  to : ProductLift → ComponentLifts
-  to ((uC , uD) , q) =
-    (uC , HomP×-fst {C = C} {D = D} {f = f} q)
-    , (uD , HomP×-snd {C = C} {D = D} {f = f} q)
-
-  from : ComponentLifts → ProductLift
-  from ((uC , p) , (uD , q)) =
-    (uC , uD) , HomP× {C = C} {D = D} {f = f} p q
-
-  from-to : (w : ProductLift) → from (to w) ≡ w
-  from-to ((uC , uD) , q) = refl
-
-  component-lifts : isContr ComponentLifts
-  component-lifts =
-    isContrΣ (contrav-lift c f vC)
-      (λ _ → contrav-lift d f vD)
+contravariant-× c d =
+  contravariant-Σ c (contravariant-reindex fst d)
 
 contravariant-Π :
   {A : Type ℓ} {X : Type ℓ'} {C : A → X → Type ℓ''}
   → ((x : X) → isContravariant (λ a → C a x))
   → isContravariant (λ a → (x : X) → C a x)
-contravariant-Π {C = C} c .contrav-lift {x = a₀} {y = a₁} f v =
+contravariant-Π {X = X} {C = C} c .contrav-lift {x = a₀} {y = a₁} f v =
   isContrRetract to from from-to pointwise-lifts
   where
   ΠLift : Type _
   ΠLift =
-    Σ ((x : _) → C a₀ x)
-      (λ u → (λ a → (x : _) → C a x) ⊢ u ≤[ f ] v)
+    Σ ((x : X) → C a₀ x)
+      (λ u → (λ a → (x : X) → C a x) ⊢ u ≤[ f ] v)
 
   PointwiseLifts : Type _
   PointwiseLifts =
-    (x : _) → Σ (C a₀ x) (λ u → (λ a → C a x) ⊢ u ≤[ f ] v x)
+    (x : X) → Σ (C a₀ x) (λ u → (λ a → C a x) ⊢ u ≤[ f ] v x)
 
   to : ΠLift → PointwiseLifts
   to (u , q) x = u x , HomPΠ-happly {P = C} {h = f} q x
@@ -449,142 +340,110 @@ contravariant-Π {C = C} c .contrav-lift {x = a₀} {y = a₁} f v =
   pointwise-lifts =
     isContrΠ (λ x → contrav-lift (c x) f (v x))
 
+representable-isContravariant :
+  {ℓ : Level} {A : Type ℓ}
+  → isSegal A
+  → (a : A)
+  → isContravariant (λ x → x ≤ a)
+representable-isContravariant S a .contrav-lift f v =
+  S f v
 
--- random transport lemmas about contravariance
-module _ where 
-
-contravariant-transport-source-subst :
-  {C : A → Type ℓ'} (c : isContravariant C)
-  → {x y z : A}
-  → (p : x ≡ y)
-  → (f : y ≤ z)
-  → (v : C z)
-  → subst C p
-      (contrav-transport c (subst (λ w → w ≤ z) (sym p) f) v)
-    ≡ contrav-transport c f v
-contravariant-transport-source-subst {C = C} c {x = x} {z = z} p =
-  J
-    (λ y p →
-      (f : y ≤ z) (v : C z)
-      → subst C p
-          (contrav-transport c (subst (λ w → w ≤ z) (sym p) f) v)
-        ≡ contrav-transport c f v)
-    base
-    p
+contravariant-total-isSegal :
+  {ℓ ℓ' : Level} {A : Type ℓ} {C : A → Type ℓ'}
+  → isSegal A → isContravariant C → isSegal (Σ A C)
+contravariant-total-isSegal {A = A} {C = C} S c {z = z , v} f g =
+  contrav-lift total-homs-contravariant f g
   where
-  base :
-    (f : x ≤ z) (v : C z)
-    → subst C refl
-        (contrav-transport c (subst (λ w → w ≤ z) (sym refl) f) v)
-      ≡ contrav-transport c f v
-  base f v =
-    cong
-      (λ h → subst C refl (contrav-transport c h v))
-      (substRefl {B = λ w → w ≤ z} f)
-    ∙ substRefl {B = C} (contrav-transport c f v)
+  TotalHom : (x : A) → C x → Type _
+  TotalHom x u = Σ (x ≤ z) (λ h → C ⊢ u ≤[ h ] v)
 
-contravariant-transport-target-subst :
-  {C : A → Type ℓ'} (c : isContravariant C)
-  → {x y z : A}
-  → (p : z ≡ y)
-  → (f : x ≤ y)
-  → (v : C z)
-  → contrav-transport c f (subst C p v)
-    ≡ contrav-transport c (subst (λ w → x ≤ w) (sym p) f) v
-contravariant-transport-target-subst {C = C} c {x = x} {z = z} p =
-  J
-    (λ y p →
-      (f : x ≤ y) (v : C z)
-      → contrav-transport c f (subst C p v)
-        ≡ contrav-transport c (subst (λ w → x ≤ w) (sym p) f) v)
-    base
-    p
+  arrows≃base-homs : (x : A) → Σ (C x) (TotalHom x) ≃ (x ≤ z)
+  arrows≃base-homs x =
+      Σ (C x) (TotalHom x)
+    ≃⟨ isoToEquiv rearrange ⟩
+      Σ (x ≤ z) (λ h → Σ (C x) (λ u → C ⊢ u ≤[ h ] v))
+    ≃⟨ Σ-contractSnd (λ h → contrav-lift c h v) ⟩
+      x ≤ z
+    ■
+    where
+    rearrange : Iso (Σ (C x) (TotalHom x))
+      (Σ (x ≤ z) (λ h → Σ (C x) (λ u → C ⊢ u ≤[ h ] v)))
+    Iso.fun rearrange (u , h , q) = h , u , q
+    Iso.inv rearrange (h , u , q) = u , h , q
+    Iso.rightInv rearrange _ = refl
+    Iso.leftInv rearrange _ = refl
+
+  summed-representable : isContravariant (λ x → Σ (C x) (TotalHom x))
+  summed-representable = contravariant-equiv
+    (λ x → invEquiv (arrows≃base-homs x))
+    (representable-isContravariant S z)
+
+  total-homs-contravariant : isContravariant (λ xu → xu ≤ (z , v))
+  total-homs-contravariant = contravariant-equiv
+    (λ xu → invEquiv (HomΣ≃ {x = xu} {y = z , v}))
+    (contravariant-Σ-reflect c summed-representable)
+    where
+    contravariant-Σ-reflect :
+      {C : A → Type ℓ'} {D : (a : A) → C a → Type ℓ''}
+      → isContravariant C
+      → isContravariant (λ a → Σ (C a) (D a))
+      → isContravariant (λ au → D (fst au) (snd au))
+    contravariant-Σ-reflect {C = C} {D = D} c d
+      .contrav-lift {x = x , u} {y = y , v} f w =
+      isOfHLevelRespectEquiv 0
+        (Σ-contractFst (chosen , isContr→isProp (contrav-lift c h v) chosen))
+        component-lifts
+      where
+      h : x ≤ y
+      h = hom-map fst f
+
+      chosen : Σ (C x) (λ u₀ → C ⊢ u₀ ≤[ h ] v)
+      chosen = u , snd (Iso.fun HomΣ-Iso f)
+
+      ComponentLifts : Type _
+      ComponentLifts =
+        Σ (Σ (C x) (λ u₀ → C ⊢ u₀ ≤[ h ] v))
+          (λ uq → Σ (D x (fst uq))
+            (λ w₀ → (λ au → D (fst au) (snd au)) ⊢ w₀ ≤[ Σ≤ h (snd uq) ] w))
+
+      TotalLifts : Type _
+      TotalLifts = Σ (Σ (C x) (D x))
+        (λ uw → (λ a → Σ (C a) (D a)) ⊢ uw ≤[ h ] (v , w))
+
+      to : ComponentLifts → TotalLifts
+      to ((u₀ , p) , w₀ , q) =
+        (u₀ , w₀) , HomPΣ {C = C} {D = D} {f = h} p q
+
+      from : TotalLifts → ComponentLifts
+      from ((u₀ , w₀) , q) =
+        (u₀ , HomPΣ-fst {C = C} {D = D} {f = h} q)
+        , w₀ , HomPΣ-snd {C = C} {D = D} {f = h} q
+
+      from-to : (lifts : ComponentLifts) → from (to lifts) ≡ lifts
+      from-to _ = refl
+
+      component-lifts : isContr ComponentLifts
+      component-lifts = isContrRetract to from from-to (contrav-lift d h (v , w))
+
+contravariant-total-isThin :
+  {ℓ ℓ' : Level} {A : Type ℓ} {C : A → Type ℓ'}
+  → isThin A → isContravariant C → ((x : A) → isSet (C x))
+  → isThin (Σ A C)
+contravariant-total-isThin {C = C} thin c Cset (x , u) (y , v) =
+  isOfHLevelRetractFromIso 1 HomΣ-Iso
+    (isPropΣ (thin x y) displayed-hom-isProp)
   where
-  base :
-    (f : x ≤ z) (v : C z)
-    → contrav-transport c f (subst C refl v)
-      ≡ contrav-transport c (subst (λ w → x ≤ w) refl f) v
-  base f v =
-    cong (contrav-transport c f) (substRefl {B = C} v)
-    ∙ cong (λ h → contrav-transport c h v)
-        (sym (substRefl {B = λ w → x ≤ w} f))
+  displayed-hom-isProp : (h : x ≤ y) → isProp (C ⊢ u ≤[ h ] v)
+  displayed-hom-isProp h =
+    isOfHLevelRespectEquiv 1
+      (invEquiv (contravariant-universal≃ c {f = h}))
+      (Cset x u (contrav-transport c h v))
 
-contravariant-transport-pathP :
-  {C : A → Type ℓ'} (c : isContravariant C)
-  → {x x' y y' : A}
-  → (p : x ≡ x')
-  → (q : y ≡ y')
-  → (f : x ≤ y)
-  → (f' : x' ≤ y')
-  → (v : C y)
-  → subst (λ w → x' ≤ w) (sym q) f'
-    ≡ subst (λ w → w ≤ y) p f
-  → PathP
-      (λ i → C (p i))
-      (contrav-transport c f v)
-      (contrav-transport c f' (subst C q v))
-contravariant-transport-pathP {A = A} {C = C} c {x = x} {y = y} p q =
-  J
-    (λ (x' : A) (p : x ≡ x') →
-      {y' : _}
-      → (q : y ≡ y')
-      → (f : x ≤ y)
-      → (f' : x' ≤ y')
-      → (v : C y)
-      → subst (λ w → x' ≤ w) (sym q) f'
-        ≡ subst (λ w → w ≤ y) p f
-      → PathP
-          (λ i → C (p i))
-          (contrav-transport c f v)
-          (contrav-transport c f' (subst C q v)))
-    base-source
-    p
-    q
-  where
-  base-target :
-    (f : x ≤ y)
-    → (f' : x ≤ y)
-    → (v : C y)
-    → subst (λ w → x ≤ w) (sym refl) f'
-      ≡ subst (λ w → w ≤ y) refl f
-    → PathP
-        (λ i → C (refl {x = x} i))
-        (contrav-transport c f v)
-        (contrav-transport c f' (subst C refl v))
-  base-target f f' v h =
-    toPathP
-      (transportRefl (contrav-transport c f v)
-      ∙ cong₂
-          (λ h′ v′ → contrav-transport c h′ v′)
-          (sym
-            (substRefl {B = λ w → w ≤ y} f)
-            ∙ sym h
-            ∙ substRefl {B = λ w → x ≤ w} f')
-          (sym (substRefl {B = C} v)))
-
-  base-source :
-    {y' : A}
-    → (q : y ≡ y')
-    → (f : x ≤ y)
-    → (f' : x ≤ y')
-    → (v : C y)
-    → subst (λ w → x ≤ w) (sym q) f'
-      ≡ subst (λ w → w ≤ y) refl f
-    → PathP
-        (λ i → C (refl {x = x} i))
-        (contrav-transport c f v)
-        (contrav-transport c f' (subst C q v))
-  base-source q =
-    J
-      (λ (y' : A) (q : y ≡ y') →
-        (f : x ≤ y)
-        → (f' : x ≤ y')
-        → (v : C y)
-        → subst (λ w → x ≤ w) (sym q) f'
-          ≡ subst (λ w → w ≤ y) refl f
-        → PathP
-            (λ i → C (refl {x = x} i))
-            (contrav-transport c f v)
-            (contrav-transport c f' (subst C q v)))
-      base-target
-      q
+contravariant-total-isPreorder :
+  {ℓ ℓ' : Level} {A : Type ℓ} {C : A → Type ℓ'}
+  → isPreorder A → isContravariant C → ((x : A) → isSet (C x))
+  → isPreorder (Σ A C)
+contravariant-total-isPreorder P c Cset = isSetThinSegal→isPreorder
+  (isSetΣ (isPreorder→isSet P) Cset)
+  (contravariant-total-isThin (isPreorder→isThin P) c Cset)
+  (contravariant-total-isSegal (isPreorder→isSegal P) c)

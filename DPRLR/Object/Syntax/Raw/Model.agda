@@ -1,11 +1,11 @@
-module DPRLR.Object.Simple.Syntax.RawModel where
+module DPRLR.Object.Syntax.Raw.Model where
 
 open import Cubical.Foundations.Prelude hiding (Sub ; _▷_ ; fst ; snd)
 
-open import DPRLR.Object.Simple.Model using (SimpleCwF)
-open import DPRLR.Object.Simple.Syntax.Base
+open import DPRLR.Object.Model.Model using (SimpleCwF)
+open import DPRLR.Object.Syntax.Raw.Base
 
-RawSyntaxCwF : SimpleCwF ℓ-zero
+RawSyntaxCwF : SimpleCwF ℓ-zero ℓ-zero
 SimpleCwF.Ctx RawSyntaxCwF = Ctx
 SimpleCwF.Ty RawSyntaxCwF = Ty
 SimpleCwF.Sub RawSyntaxCwF = Sub

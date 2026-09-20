@@ -1,13 +1,13 @@
-module DPRLR.Object.Simple.Syntax.LocalizedModel where
+module DPRLR.Object.Syntax.Localized.Model where
 
 open import Cubical.Foundations.Prelude hiding (Sub ; _▷_ ; fst ; snd)
 
-open import DPRLR.Object.Simple.Model using
-  (SimpleCwF ; SimpleDirectedStructure ; SimpleDirectedCwF)
-open import DPRLR.Object.Simple.Syntax.LocalizedSyntax
-import DPRLR.Object.Simple.Syntax.Base as Raw
+open import DPRLR.Object.Model.Model using
+  (SimpleCwF ; SimpleDirectedCwF)
+open import DPRLR.Object.Syntax.Localized.Base
+import DPRLR.Object.Syntax.Raw.Base as Raw
 
-LocalizedSyntaxCwF : SimpleCwF ℓ-zero
+LocalizedSyntaxCwF : SimpleCwF ℓ-zero ℓ-zero
 SimpleCwF.Ctx LocalizedSyntaxCwF = Raw.Ctx
 SimpleCwF.Ty LocalizedSyntaxCwF = Raw.Ty
 SimpleCwF.Sub LocalizedSyntaxCwF = Subᴾ
@@ -58,12 +58,9 @@ SimpleCwF.β×₁ LocalizedSyntaxCwF = β×₁ᴾ
 SimpleCwF.β×₂ LocalizedSyntaxCwF = β×₂ᴾ
 SimpleCwF.η× LocalizedSyntaxCwF = η×ᴾ
 
-LocalizedSyntaxDirected : SimpleDirectedStructure LocalizedSyntaxCwF
-SimpleDirectedStructure.tm-set LocalizedSyntaxDirected Γ A = Tmᴾ-isSet
-SimpleDirectedStructure.sub-set LocalizedSyntaxDirected Γ Δ = Subᴾ-isSet
-SimpleDirectedStructure.tm-thin LocalizedSyntaxDirected Γ A = Tmᴾ-isThin
-SimpleDirectedStructure.tm-segal LocalizedSyntaxDirected Γ A = Tmᴾ-isSegal
-
-LocalizedSyntaxModel : SimpleDirectedCwF ℓ-zero
+LocalizedSyntaxModel : SimpleDirectedCwF ℓ-zero ℓ-zero
 SimpleDirectedCwF.cwf LocalizedSyntaxModel = LocalizedSyntaxCwF
-SimpleDirectedCwF.directed LocalizedSyntaxModel = LocalizedSyntaxDirected
+SimpleDirectedCwF.sub-set LocalizedSyntaxModel Γ Δ = Subᴾ-isSet
+SimpleDirectedCwF.tm-set LocalizedSyntaxModel Γ A = Tmᴾ-isSet
+SimpleDirectedCwF.tm-thin LocalizedSyntaxModel Γ A = Tmᴾ-isThin
+SimpleDirectedCwF.tm-segal LocalizedSyntaxModel Γ A = Tmᴾ-isSegal

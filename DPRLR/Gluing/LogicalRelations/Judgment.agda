@@ -1,15 +1,18 @@
-module DPRLR.Gluing.Simple.Judgment where
-
 open import Cubical.Foundations.Prelude hiding (Sub ; _▷_ ; fst ; snd)
 open import Cubical.Foundations.Equiv
 open import Cubical.Foundations.Isomorphism
+open import Cubical.Data.Sigma using () renaming (fst to fstΣ ; snd to sndΣ)
 
 open import DPRLR.Simplicial.Hom
 open import DPRLR.Simplicial.Contravariant
-open import DPRLR.Object.Simple.Model
+open import DPRLR.Object.Model.Model using (SimpleDirectedCwF)
+open import DPRLR.Cubical.Path using (ΣPath→PathP)
 
-module _ {ℓM : Level} (𝓜 : SimpleDirectedCwF ℓM) where
+module DPRLR.Gluing.LogicalRelations.Judgment
+  {ℓS ℓM : Level} (𝓜 : SimpleDirectedCwF ℓS ℓM) where
   infix 4 _≤ᵍ_
+  infixl 30 _∘₀_
+  infixl 40 _[_]Tm₀
 
   open SimpleDirectedCwF 𝓜
     renaming
@@ -20,23 +23,26 @@ module _ {ℓM : Level} (𝓜 : SimpleDirectedCwF ℓM) where
       ; ε to εₘ
       ; _∘_ to _∘ₘ_
       ; _[_]Tm to _[_]Tmₘ
+      ; sub-set to sub-setₘ
+      ; tm-set to tm-setₘ
+      ; tm-thin to tm-thinₘ
       )
 
-  record GluCtx : Type (ℓ-suc ℓM) where
+  record GluCtx : Type (ℓ-max ℓS (ℓ-suc ℓM)) where
     field
       Γ° : Ctxₘ
       Γ∙ : Subₘ εₘ Γ° → Type ℓM
 
   open GluCtx public
 
-  record GluSub (Γ Δ : GluCtx) : Type (ℓ-suc ℓM) where
+  record GluSub (Γ Δ : GluCtx) : Type ℓM where
     field
       σ° : Subₘ (Γ° Γ) (Γ° Δ)
       σ∙ : (γ° : Subₘ εₘ (Γ° Γ)) → Γ∙ Γ γ° → Γ∙ Δ (σ° ∘ₘ γ°)
 
   open GluSub public
 
-  record GluTy : Type (ℓ-suc ℓM) where
+  record GluTy : Type (ℓ-max ℓS (ℓ-suc ℓM)) where
     field
       A° : Tyₘ
       A∙ : Tmₘ εₘ A° → Type ℓM
@@ -44,7 +50,7 @@ module _ {ℓM : Level} (𝓜 : SimpleDirectedCwF ℓM) where
 
   open GluTy public
 
-  record GluTm (Γ : GluCtx) (A : GluTy) : Type (ℓ-suc ℓM) where
+  record GluTm (Γ : GluCtx) (A : GluTy) : Type ℓM where
     field
       M° : Tmₘ (Γ° Γ) (A° A)
       M∙ : (γ° : Subₘ εₘ (Γ° Γ)) (γ∙ : Γ∙ Γ γ°)
@@ -52,8 +58,34 @@ module _ {ℓM : Level} (𝓜 : SimpleDirectedCwF ℓM) where
 
   open GluTm public
 
+  GluSub₀ : GluCtx → Type ℓM
+  GluSub₀ Γ = Σ (Subₘ εₘ (Γ° Γ)) (Γ∙ Γ)
+
+  GluTm₀ : GluTy → Type ℓM
+  GluTm₀ A = Σ (Tmₘ εₘ (A° A)) (A∙ A)
+
+  _∘₀_ : {Γ Δ : GluCtx} → GluSub Γ Δ → GluSub₀ Γ → GluSub₀ Δ
+  σ ∘₀ (γ , γ∙) = σ° σ ∘ₘ γ , σ∙ σ γ γ∙
+
+  _[_]Tm₀ : {Γ : GluCtx} {A : GluTy} → GluTm Γ A → GluSub₀ Γ → GluTm₀ A
+  t [ γ , γ∙ ]Tm₀ = M° t [ γ ]Tmₘ , M∙ t γ γ∙
+
+  GluSub-ext : {Γ Δ : GluCtx} {σ τ : GluSub Γ Δ}
+    → (p : σ° σ ≡ σ° τ)
+    → ((γ : GluSub₀ Γ) → σ ∘₀ γ ≡ τ ∘₀ γ) → σ ≡ τ
+  σ° (GluSub-ext p e i) = p i
+  σ∙ (GluSub-ext {Δ = Δ} p e i) γ γ∙ =
+    ΣPath→PathP (sub-setₘ εₘ (Γ° Δ)) (λ j → p j ∘ₘ γ) (e (γ , γ∙)) i
+
+  GluTm-ext : {Γ : GluCtx} {A : GluTy} {t u : GluTm Γ A}
+    → (p : M° t ≡ M° u)
+    → ((γ : GluSub₀ Γ) → t [ γ ]Tm₀ ≡ u [ γ ]Tm₀) → t ≡ u
+  M° (GluTm-ext p e i) = p i
+  M∙ (GluTm-ext {A = A} p e i) γ γ∙ =
+    ΣPath→PathP (tm-setₘ εₘ (A° A)) (λ j → p j [ γ ]Tmₘ) (e (γ , γ∙)) i
+
   record _≤ᵍ_ {Γ : GluCtx} {A : GluTy}
-    (M N : GluTm Γ A) : Type (ℓ-suc ℓM) where
+    (M N : GluTm Γ A) : Type ℓM where
     field
       r° : M° M ≤ M° N
       r∙ : (γ° : Subₘ εₘ (Γ° Γ)) (γ∙ : Γ∙ Γ γ°)
@@ -85,7 +117,7 @@ module _ {ℓM : Level} (𝓜 : SimpleDirectedCwF ℓM) where
     right : _ ≡ N
     GluTm.M° (right i) = right-endpoint (_≤ᵍ_.r° r) i
     GluTm.M∙ (right i) γ° γ∙ =
-      let (_ , _ , r′) = _≤ᵍ_.r∙ r γ° γ∙ in r′ i
+      let (_ , _ , endpoint) = _≤ᵍ_.r∙ r γ° γ∙ in endpoint i
 
   ≤→≤ᵍ :
     {Γ : GluCtx} {A : GluTy} {M N : GluTm Γ A}
@@ -109,3 +141,18 @@ module _ {ℓM : Level} (𝓜 : SimpleDirectedCwF ℓM) where
     {Γ : GluCtx} {A : GluTy} (M N : GluTm Γ A)
     → (M ≤ᵍ N) ≃ (M ≤ N)
   ≤ᵍ≃≤ M N = isoToEquiv (≤ᵍIso≤ M N)
+
+  GluTm-hom : {Γ : GluCtx} {A : GluTy} {t u : GluTm Γ A}
+    → M° t ≤ M° u
+    → ((γ : GluSub₀ Γ) → t [ γ ]Tm₀ ≤ u [ γ ]Tm₀) → t ≤ u
+  GluTm-hom {A = A} {t = t} {u = u} r h = ≤ᵍ→≤ record
+    { r° = r
+    ; r∙ = λ γ γ∙ →
+        let e = h (γ , γ∙) in
+        subst (λ f → A∙ A ⊢ M∙ t γ γ∙ ≤[ f ] M∙ u γ γ∙)
+          (tm-thinₘ εₘ (A° A) _ _ (hom-map fstΣ e)
+            (hom-map (λ t → t [ γ ]Tmₘ) r))
+          ((λ i → hom-path e i .sndΣ)
+          , (λ i → left-endpoint e i .sndΣ)
+          , (λ i → right-endpoint e i .sndΣ))
+    }

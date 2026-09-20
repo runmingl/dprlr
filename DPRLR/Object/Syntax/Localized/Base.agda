@@ -1,4 +1,4 @@
-module DPRLR.Object.Simple.Syntax.LocalizedSyntax where
+module DPRLR.Object.Syntax.Localized.Base where
 
 open import Cubical.Foundations.Prelude hiding (Sub ; _▷_ ; fst ; snd)
 
@@ -6,7 +6,7 @@ open import DPRLR.Simplicial.Hom
 open import DPRLR.Simplicial.Interval
 open import DPRLR.Simplicial.PreorderLocalization
 open import DPRLR.Simplicial.Segal
-import DPRLR.Object.Simple.Syntax.Base as Raw
+import DPRLR.Object.Syntax.Raw.Base as Raw
 
 infixl 30 _∘ᴾ_
 infixl 40 _[_]Tmᴾ
