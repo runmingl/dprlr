@@ -1,6 +1,6 @@
 module DPRLR.Object.Model.Model where
 
-open import Cubical.Foundations.Prelude hiding (Sub ; _▷_ ; fst ; snd ; lift)
+open import Cubical.Foundations.Prelude hiding (Sub ; _▷_ ; lift)
 open import Cubical.Foundations.Equiv using (_≃_)
 open import Cubical.Foundations.Isomorphism using (iso ; isoToEquiv)
 open import Cubical.Data.Sigma using (_×_ ; _,_)

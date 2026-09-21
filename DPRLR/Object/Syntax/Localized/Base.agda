@@ -1,6 +1,6 @@
 module DPRLR.Object.Syntax.Localized.Base where
 
-open import Cubical.Foundations.Prelude hiding (Sub ; _▷_ ; fst ; snd)
+open import Cubical.Foundations.Prelude
 
 open import DPRLR.Simplicial.Hom
 open import DPRLR.Simplicial.Interval

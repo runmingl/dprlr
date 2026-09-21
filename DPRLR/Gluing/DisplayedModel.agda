@@ -474,19 +474,22 @@ module _ {ℓS ℓM : Level} (𝓜 : SimpleDirectedCwF ℓS ℓM) where
               (funTmᴰ Γ∙ A∙ B∙ F° F∙))
       }
 
-  GluingDirectedModel : SimpleDirectedCwF (ℓ-max ℓS (ℓ-suc ℓM)) ℓM
-  GluingDirectedModel = record
-    { cwf = TotalSimpleCwF GluingDisplayed
-    ; sub-set = λ (Γ , Γ∙) (Δ , Δ∙) →
+  GluingDisplayedDirected : DisplayedSimpleDirectedCwF (ℓ-suc ℓM) ℓM 𝓜
+  GluingDisplayedDirected = record
+    { displayed = GluingDisplayed
+    ; total-sub-set = λ (Γ , Γ∙) (Δ , Δ∙) →
         isSetΣ (M.sub-set Γ Δ) (SUBPredᴰ-isSet Γ∙ Δ∙)
-    ; tm-set = λ (Γ , Γ∙) (A , A∙) →
+    ; total-tm-set = λ (Γ , Γ∙) (A , A∙) →
         isSetΣ (M.tm-set Γ A) (TMPredᴰ-isSet Γ∙ A∙)
-    ; tm-thin = λ (Γ , Γ∙) (A , A∙) →
+    ; total-tm-thin = λ (Γ , Γ∙) (A , A∙) →
         contravariant-total-isThin (M.tm-thin Γ A)
           (TMPredᴰ-contravariant Γ∙ A∙) (TMPredᴰ-isSet Γ∙ A∙)
-    ; tm-segal = λ (Γ , Γ∙) (A , A∙) →
+    ; total-tm-segal = λ (Γ , Γ∙) (A , A∙) →
         contravariant-total-isSegal (M.tm-segal Γ A)
           (TMPredᴰ-contravariant Γ∙ A∙)
     }
     where
     module M = SimpleDirectedCwF 𝓜
+
+  GluingDirectedModel : SimpleDirectedCwF (ℓ-max ℓS (ℓ-suc ℓM)) ℓM
+  GluingDirectedModel = DisplayedSimpleDirectedCwF.total GluingDisplayedDirected

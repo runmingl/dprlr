@@ -437,6 +437,7 @@ import DPRLR.Gluing.DisplayedModel using
   ; PRODᴰ
   ; FUNᴰ
   ; GluingDisplayed
+  ; GluingDisplayedDirected
   ; GluingDirectedModel
   )
 
@@ -453,7 +454,7 @@ import DPRLR.Gluing.FTLR using
     Boolean canonicity extracts a canonical boolean and a reduction from the fundamental theorem.
 -}
 import DPRLR.Gluing.FTLR using
-  ( bool-canonicity
+  ( bool-canonicityᴾ
   )
 
 {-

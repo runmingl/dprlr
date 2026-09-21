@@ -1,6 +1,6 @@
 module DPRLR.Gluing.LogicalRelations.Function where
 
-open import Cubical.Foundations.Prelude hiding (Sub ; _▷_ ; fst ; snd)
+open import Cubical.Foundations.Prelude
 open import DPRLR.Cubical.Path using (ΣPathP-subst)
 open import Cubical.Data.Sigma
 

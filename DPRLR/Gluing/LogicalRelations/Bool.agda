@@ -1,6 +1,6 @@
 module DPRLR.Gluing.LogicalRelations.Bool where
 
-open import Cubical.Foundations.Prelude hiding (Sub ; _▷_ ; fst ; snd)
+open import Cubical.Foundations.Prelude
 open import Cubical.Data.Bool.Base renaming (Bool to Bool₂ ; true to true₂ ; false to false₂)
 open import Cubical.Data.Sigma
 

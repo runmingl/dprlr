@@ -1,4 +1,4 @@
-open import Cubical.Foundations.Prelude hiding (Sub ; _▷_ ; fst ; snd)
+open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Equiv
 open import Cubical.Foundations.Isomorphism
 open import Cubical.Data.Sigma using () renaming (fst to fstΣ ; snd to sndΣ)

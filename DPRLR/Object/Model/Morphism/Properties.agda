@@ -1,6 +1,6 @@
 module DPRLR.Object.Model.Morphism.Properties where
 
-open import Cubical.Foundations.Prelude hiding (Sub ; _▷_ ; fst ; snd)
+open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.HLevels
   using (isOfHLevelPathP' ; isContrΣ' ; isOfHLevelRetract)
 open import Cubical.Data.Sigma using (fst ; _,_)

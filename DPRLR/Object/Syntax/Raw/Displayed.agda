@@ -1,6 +1,6 @@
 module DPRLR.Object.Syntax.Raw.Displayed where
 
-open import Cubical.Foundations.Prelude hiding (Sub ; _▷_ ; fst ; snd)
+open import Cubical.Foundations.Prelude hiding (Sub)
 open import Cubical.Data.Sigma using () renaming (fst to proj₁ ; snd to proj₂)
 
 open import DPRLR.Object.Model.DisplayedModel

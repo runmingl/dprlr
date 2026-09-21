@@ -1,11 +1,13 @@
 module DPRLR.Object.Model.DisplayedModel where
 
-open import Cubical.Foundations.Prelude hiding (Sub ; _▷_ ; fst ; snd ; lift)
+open import Cubical.Foundations.Prelude hiding (Sub ; _▷_ ; lift)
 open import Cubical.Data.Sigma hiding (Sub)
 
 open import DPRLR.Simplicial.Hom
 open import DPRLR.Simplicial.Product
-open import DPRLR.Object.Model.Model using (SimpleCwF)
+open import DPRLR.Simplicial.Segal using (isSegal)
+open import DPRLR.Object.Model.Model using (SimpleCwF ; SimpleDirectedCwF)
+open import DPRLR.Object.Model.Morphism.Base using (SimpleMorphism)
 
 record DisplayedSimpleCwF
   {ℓS ℓM : Level} (ℓD₀ ℓD₁ : Level) (𝓒 : SimpleCwF ℓS ℓM)
@@ -538,3 +540,55 @@ module _ {ℓS ℓM ℓD₀ ℓD₁ : Level}
   SimpleCwF.η× TotalSimpleCwF P =
     Σ≤ (C.η× (fst P))
       (D.η×∙ (snd P))
+
+  projectMorphism : {ℓAS ℓA : Level} {𝓐 : SimpleCwF ℓAS ℓA}
+    → SimpleMorphism 𝓐 TotalSimpleCwF → SimpleMorphism 𝓐 𝓒
+  projectMorphism f = record
+    { sorts = record
+      { Tyᶠ = λ A → fst (F.Tyᶠ A) ; Ctxᶠ = λ Γ → fst (F.Ctxᶠ Γ)
+      ; Boolᶠ = cong fst F.Boolᶠ ; ×ᶠ = λ A B → cong fst (F.×ᶠ A B)
+      ; ⇒ᶠ = λ A B → cong fst (F.⇒ᶠ A B)
+      ; εᶠ = cong fst F.εᶠ ; ▷ᶠ = λ Γ A → cong fst (F.▷ᶠ Γ A) }
+    ; over = record
+      { Subᶠ = λ σ → fst (F.Subᶠ σ) ; Tmᶠ = λ t → fst (F.Tmᶠ t)
+      ; idᶠ = cong fst F.idᶠ ; ∘ᶠ = λ τ σ → cong fst (F.∘ᶠ τ σ)
+      ; ε-subᶠ = λ i → fst (F.ε-subᶠ i)
+      ; pᶠ = λ i → fst (F.pᶠ i) ; qᶠ = λ i → fst (F.qᶠ i)
+      ; ⟨⟩ᶠ = λ σ t i → fst (F.⟨⟩ᶠ σ t i)
+      ; []ᶠ = λ t σ → cong fst (F.[]ᶠ t σ)
+      ; trueᶠ = λ i → fst (F.trueᶠ i) ; falseᶠ = λ i → fst (F.falseᶠ i)
+      ; ifᶠ = λ b t u → cong fst (F.ifᶠ b t u)
+      ; pairᶠ = λ t u i → fst (F.pairᶠ t u i)
+      ; fstᶠ = λ t → cong fst (F.fstᶠ t)
+      ; sndᶠ = λ t → cong fst (F.sndᶠ t)
+      ; lamᶠ = λ t i → fst (F.lamᶠ t i)
+      ; appᶠ = λ t u → cong fst (F.appᶠ t u)
+      }
+    }
+    where module F = SimpleMorphism f
+
+record DisplayedSimpleDirectedCwF {ℓS ℓM : Level} (ℓD₀ ℓD₁ : Level)
+  (𝓜 : SimpleDirectedCwF ℓS ℓM)
+  : Type (ℓ-suc (ℓ-max (ℓ-max ℓS ℓM) (ℓ-max ℓD₀ ℓD₁))) where
+  field
+    displayed : DisplayedSimpleCwF ℓD₀ ℓD₁ (SimpleDirectedCwF.cwf 𝓜)
+
+  open DisplayedSimpleCwF displayed public
+
+  private
+    module Total = SimpleCwF (TotalSimpleCwF displayed)
+
+  field
+    total-sub-set : (Γ Δ : Total.Ctx) → isSet (Total.Sub Γ Δ)
+    total-tm-set : (Γ : Total.Ctx) (A : Total.Ty) → isSet (Total.Tm Γ A)
+    total-tm-thin : (Γ : Total.Ctx) (A : Total.Ty) → isThin (Total.Tm Γ A)
+    total-tm-segal : (Γ : Total.Ctx) (A : Total.Ty) → isSegal (Total.Tm Γ A)
+
+  total : SimpleDirectedCwF (ℓ-max ℓS ℓD₀) (ℓ-max ℓM ℓD₁)
+  total = record
+    { cwf = TotalSimpleCwF displayed
+    ; sub-set = total-sub-set
+    ; tm-set = total-tm-set
+    ; tm-thin = total-tm-thin
+    ; tm-segal = total-tm-segal
+    }

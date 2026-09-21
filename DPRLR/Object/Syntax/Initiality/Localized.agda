@@ -1,6 +1,6 @@
 module DPRLR.Object.Syntax.Initiality.Localized where
 
-open import Cubical.Foundations.Prelude hiding (Sub ; _▷_ ; fst ; snd)
+open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Equiv using (_≃_ ; invEquiv)
 open import Cubical.Foundations.HLevels using (isOfHLevelRespectEquiv)
 open import Cubical.Foundations.Isomorphism using (iso ; isoToEquiv)

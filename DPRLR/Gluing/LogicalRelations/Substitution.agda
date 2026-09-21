@@ -5,7 +5,7 @@
 -- • Role: ᵍ supplies the glued model; ₀ makes its laws easier to prove
 --   pointwise.
 
-open import Cubical.Foundations.Prelude hiding (Sub ; _▷_ ; fst ; snd)
+open import Cubical.Foundations.Prelude
 open import DPRLR.Cubical.Path using (ΣPathP-subst ; ΣPath→PathP)
 open import Cubical.Data.Sigma
 open import Cubical.Data.Unit

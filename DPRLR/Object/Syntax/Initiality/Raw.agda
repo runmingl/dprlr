@@ -1,6 +1,6 @@
 module DPRLR.Object.Syntax.Initiality.Raw where
 
-open import Cubical.Foundations.Prelude hiding (Sub ; _▷_ ; fst ; snd)
+open import Cubical.Foundations.Prelude
 open import Cubical.Data.Unit
 
 open import DPRLR.Simplicial.Hom
