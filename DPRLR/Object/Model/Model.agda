@@ -8,7 +8,7 @@ open import Cubical.Data.Sigma using (_×_ ; _,_)
 open import DPRLR.Simplicial.Hom
 open import DPRLR.Simplicial.Segal
 open import DPRLR.Simplicial.PreorderLocalization
-  using (isPreorder ; isSetThinSegal→isPreorder ; isPreorder≃ ; isPreorder×)
+  using (isPreorder ; isSetThinSegal→isPreorder)
 
 record SimpleCwF (ℓS ℓM : Level) : Type (ℓ-suc (ℓ-max ℓS ℓM)) where
   infixl 30 _∘_
@@ -224,18 +224,19 @@ record SimpleDirectedCwF (ℓS ℓM : Level) : Type (ℓ-suc (ℓ-max ℓS ℓM)
 
   field
     sub-set : (Γ Δ : Ctx) → isSet (Sub Γ Δ)
+    sub-thin : (Γ Δ : Ctx) → isThin (Sub Γ Δ)
+    sub-segal : (Γ Δ : Ctx) → isSegal (Sub Γ Δ)
     tm-set : (Γ : Ctx) (A : Ty) → isSet (Tm Γ A)
     tm-thin : (Γ : Ctx) (A : Ty) → isThin (Tm Γ A)
     tm-segal : (Γ : Ctx) (A : Ty) → isSegal (Tm Γ A)
 
+  sub-local : (Γ Δ : Ctx) → isPreorder (Sub Γ Δ)
+  sub-local Γ Δ = isSetThinSegal→isPreorder
+    (sub-set Γ Δ) (sub-thin Γ Δ) (sub-segal Γ Δ)
+
   tm-local : (Γ : Ctx) (A : Ty) → isPreorder (Tm Γ A)
   tm-local Γ A = isSetThinSegal→isPreorder
     (tm-set Γ A) (tm-thin Γ A) (tm-segal Γ A)
-
-  sub-extension-local : (Γ Δ : Ctx) (A : Ty)
-    → isPreorder (Sub Γ Δ) → isPreorder (Sub Γ (Δ ▷ A))
-  sub-extension-local Γ Δ A localΔ =
-    isPreorder≃ (▷-universal Γ Δ A) (isPreorder× localΔ (tm-local Γ A))
 
   tm-∙ : {Γ : Ctx} {A : Ty} {t u v : Tm Γ A}
     → t ≤ u → u ≤ v → t ≤ v

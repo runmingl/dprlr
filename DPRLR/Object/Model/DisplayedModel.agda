@@ -580,6 +580,8 @@ record DisplayedSimpleDirectedCwF {ℓS ℓM : Level} (ℓD₀ ℓD₁ : Level)
 
   field
     total-sub-set : (Γ Δ : Total.Ctx) → isSet (Total.Sub Γ Δ)
+    total-sub-thin : (Γ Δ : Total.Ctx) → isThin (Total.Sub Γ Δ)
+    total-sub-segal : (Γ Δ : Total.Ctx) → isSegal (Total.Sub Γ Δ)
     total-tm-set : (Γ : Total.Ctx) (A : Total.Ty) → isSet (Total.Tm Γ A)
     total-tm-thin : (Γ : Total.Ctx) (A : Total.Ty) → isThin (Total.Tm Γ A)
     total-tm-segal : (Γ : Total.Ctx) (A : Total.Ty) → isSegal (Total.Tm Γ A)
@@ -588,6 +590,8 @@ record DisplayedSimpleDirectedCwF {ℓS ℓM : Level} (ℓD₀ ℓD₁ : Level)
   total = record
     { cwf = TotalSimpleCwF displayed
     ; sub-set = total-sub-set
+    ; sub-thin = total-sub-thin
+    ; sub-segal = total-sub-segal
     ; tm-set = total-tm-set
     ; tm-thin = total-tm-thin
     ; tm-segal = total-tm-segal

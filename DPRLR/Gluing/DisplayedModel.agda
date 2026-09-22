@@ -48,6 +48,7 @@ module _ {ℓS ℓM : Level} (𝓜 : SimpleDirectedCwF ℓS ℓM) where
   record CtxPred (Γ° : Ctxₘ) : Type (ℓ-suc ℓM) where
     field
       Γ∙ : Subₘ εₘ Γ° → Type ℓM
+      cΓ : isContravariant Γ∙
       Γ∙-isSet : (γ° : Subₘ εₘ Γ°) → isSet (Γ∙ γ°)
 
   record TyPred (A° : Tyₘ) : Type (ℓ-suc ℓM) where
@@ -62,6 +63,7 @@ module _ {ℓS ℓM : Level} (𝓜 : SimpleDirectedCwF ℓS ℓM) where
     → GluCtx 𝓜
   GluCtx.Γ° (CTX Γ° Γ∙) = Γ°
   GluCtx.Γ∙ (CTX Γ° Γ∙) = CtxPred.Γ∙ Γ∙
+  GluCtx.cΓ (CTX Γ° Γ∙) = CtxPred.cΓ Γ∙
 
   TY :
     (A° : Tyₘ)
@@ -108,6 +110,17 @@ module _ {ℓS ℓM : Level} (𝓜 : SimpleDirectedCwF ℓS ℓM) where
     → isSet (SUBPredᴰ Γ∙ Δ∙ σ°)
   SUBPredᴰ-isSet Γ∙ Δ∙ σ° =
     isSetΠ2 λ γ° _ → CtxPred.Γ∙-isSet Δ∙ (σ° ∘ₘ γ°)
+
+  SUBPredᴰ-contravariant :
+    {Γ° Δ° : Ctxₘ}
+    (Γ∙ : CtxPred Γ°) (Δ∙ : CtxPred Δ°)
+    → isContravariant (SUBPredᴰ Γ∙ Δ∙)
+  SUBPredᴰ-contravariant Γ∙ Δ∙ =
+    contravariant-Π λ γ° →
+      contravariant-Π λ _ →
+        contravariant-reindex
+          (λ σ° → σ° ∘ₘ γ°)
+          (CtxPred.cΓ Δ∙)
 
   TMPredᴰ :
     {Γ° : Ctxₘ} {A° : Tyₘ}
@@ -172,6 +185,8 @@ module _ {ℓS ℓM : Level} (𝓜 : SimpleDirectedCwF ℓS ℓM) where
   εᴰ : CtxPred εₘ
   CtxPred.Γ∙ εᴰ =
     GluCtx.Γ∙ (εᵍ 𝓜)
+  CtxPred.cΓ εᴰ =
+    GluCtx.cΓ (εᵍ 𝓜)
   CtxPred.Γ∙-isSet εᴰ _ =
     isSetUnit*
 
@@ -182,6 +197,8 @@ module _ {ℓS ℓM : Level} (𝓜 : SimpleDirectedCwF ℓS ℓM) where
     → CtxPred (Γ° ▷ₘ A°)
   CtxPred.Γ∙ (_▷ᴰ_ {Γ° = Γ°} {A° = A°} Γ∙ A∙) =
     GluCtx.Γ∙ (_▷ᵍ_ 𝓜 (CTX Γ° Γ∙) (TY A° A∙))
+  CtxPred.cΓ (_▷ᴰ_ {Γ° = Γ°} {A° = A°} Γ∙ A∙) =
+    GluCtx.cΓ (_▷ᵍ_ 𝓜 (CTX Γ° Γ∙) (TY A° A∙))
   CtxPred.Γ∙-isSet (Γ∙ ▷ᴰ A∙) δ° =
     isSetΣ
       (CtxPred.Γ∙-isSet Γ∙ (pₘ ∘ₘ δ°))
@@ -479,6 +496,12 @@ module _ {ℓS ℓM : Level} (𝓜 : SimpleDirectedCwF ℓS ℓM) where
     { displayed = GluingDisplayed
     ; total-sub-set = λ (Γ , Γ∙) (Δ , Δ∙) →
         isSetΣ (M.sub-set Γ Δ) (SUBPredᴰ-isSet Γ∙ Δ∙)
+    ; total-sub-thin = λ (Γ , Γ∙) (Δ , Δ∙) →
+        contravariant-total-isThin (M.sub-thin Γ Δ)
+          (SUBPredᴰ-contravariant Γ∙ Δ∙) (SUBPredᴰ-isSet Γ∙ Δ∙)
+    ; total-sub-segal = λ (Γ , Γ∙) (Δ , Δ∙) →
+        contravariant-total-isSegal (M.sub-segal Γ Δ)
+          (SUBPredᴰ-contravariant Γ∙ Δ∙)
     ; total-tm-set = λ (Γ , Γ∙) (A , A∙) →
         isSetΣ (M.tm-set Γ A) (TMPredᴰ-isSet Γ∙ A∙)
     ; total-tm-thin = λ (Γ , Γ∙) (A , A∙) →

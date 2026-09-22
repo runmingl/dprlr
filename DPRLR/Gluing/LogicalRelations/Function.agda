@@ -96,39 +96,39 @@ module _ {ℓS ℓM : Level} (𝓜 : SimpleDirectedCwF ℓS ℓM) where
   LAM : {Γ : GluCtx} {A B : GluTy}
     → GluTm (Γ ▷ᵍ A) B → GluTm Γ (FUN A B)
   GluTm.M° (LAM N) = lamₘ (GluTm.M° N)
-  GluTm.M∙ (LAM {A = A} {B = B} N) γ γ∙ m m∙ =
+  GluTm.M∙ (LAM {Γ = Γ} {A = A} {B = B} N) γ γ∙ m m∙ =
     contrav-transport (GluTy.cA B) (β⇒-substₘ (GluTm.M° N) γ m)
-      (snd (N [ ⟨_,_⟩₀ {A = A} (γ , γ∙) (m , m∙) ]Tm₀))
+      (snd (N [ ⟨_,_⟩₀ {Γ = Γ} {A = A} (γ , γ∙) (m , m∙) ]Tm₀))
 
   LAM[] : {Γ Δ : GluCtx} {A B : GluTy}
     (N : GluTm (Δ ▷ᵍ A) B) (σ : GluSub Γ Δ)
-    → (LAM {A = A} {B = B} N) [ σ ]Tmᵍ
-      ≡ LAM {A = A} {B = B} (N [ liftᵍ {A = A} σ ]Tmᵍ)
-  LAM[] {Γ = Γ} {A = A} {B = B} N σ =
+    → (LAM {Γ = Δ} {A = A} {B = B} N) [ σ ]Tmᵍ
+      ≡ LAM {Γ = Γ} {A = A} {B = B} (N [ liftᵍ {A = A} σ ]Tmᵍ)
+  LAM[] {Γ = Γ} {Δ = Δ} {A = A} {B = B} N σ =
     GluTm-ext (lam[]ₘ (GluTm.M° N) (GluSub.σ° σ)) λ γ →
-        ((LAM {A = A} {B = B} N) [ σ ]Tmᵍ) [ γ ]Tm₀
-      ≡⟨ Tm-∘₀ (LAM {A = A} {B = B} N) σ γ ⟩
-        (LAM {A = A} {B = B} N) [ σ ∘₀ γ ]Tm₀
+        ((LAM {Γ = Δ} {A = A} {B = B} N) [ σ ]Tmᵍ) [ γ ]Tm₀
+      ≡⟨ Tm-∘₀ (LAM {Γ = Δ} {A = A} {B = B} N) σ γ ⟩
+        (LAM {Γ = Δ} {A = A} {B = B} N) [ σ ∘₀ γ ]Tm₀
       ≡⟨ naturality γ ⟩
-        (LAM {A = A} {B = B} Nσ) [ γ ]Tm₀
+        (LAM {Γ = Γ} {A = A} {B = B} Nσ) [ γ ]Tm₀
       ∎
     where
     Nσ : GluTm (Γ ▷ᵍ A) B
     Nσ = N [ liftᵍ {A = A} σ ]Tmᵍ
 
     body-path : (γ : GluSub₀ Γ) (m : GluTm₀ A)
-      → Nσ [ ⟨_,_⟩₀ {A = A} γ m ]Tm₀
-        ≡ N [ ⟨_,_⟩₀ {A = A} (σ ∘₀ γ) m ]Tm₀
+      → Nσ [ ⟨_,_⟩₀ {Γ = Γ} {A = A} γ m ]Tm₀
+        ≡ N [ ⟨_,_⟩₀ {Γ = Δ} {A = A} (σ ∘₀ γ) m ]Tm₀
     body-path γ m =
-        Nσ [ ⟨_,_⟩₀ {A = A} γ m ]Tm₀
-      ≡⟨ Tm-∘₀ N (liftᵍ {A = A} σ) (⟨_,_⟩₀ {A = A} γ m) ⟩
-        N [ liftᵍ {A = A} σ ∘₀ ⟨_,_⟩₀ {A = A} γ m ]Tm₀
+        Nσ [ ⟨_,_⟩₀ {Γ = Γ} {A = A} γ m ]Tm₀
+      ≡⟨ Tm-∘₀ N (liftᵍ {A = A} σ) (⟨_,_⟩₀ {Γ = Γ} {A = A} γ m) ⟩
+        N [ liftᵍ {A = A} σ ∘₀ ⟨_,_⟩₀ {Γ = Γ} {A = A} γ m ]Tm₀
       ≡⟨ cong (N [_]Tm₀) (lift-⟨⟩₀ {A = A} σ γ m) ⟩
-        N [ ⟨_,_⟩₀ {A = A} (σ ∘₀ γ) m ]Tm₀
+        N [ ⟨_,_⟩₀ {Γ = Δ} {A = A} (σ ∘₀ γ) m ]Tm₀
       ∎
 
     naturality : (γ : GluSub₀ Γ)
-      → (LAM {A = A} {B = B} N) [ σ ∘₀ γ ]Tm₀ ≡ (LAM {A = A} {B = B} Nσ) [ γ ]Tm₀
+      → (LAM {Γ = Δ} {A = A} {B = B} N) [ σ ∘₀ γ ]Tm₀ ≡ (LAM {Γ = Γ} {A = A} {B = B} Nσ) [ γ ]Tm₀
     naturality (γ , γ∙) = ΣPathP (base , λ i m m∙ →
       contravariant-transport-cong (GluTy.cA B) (tm-thinₘ εₘ (GluTy.A° B))
         (cong (λ f → appₘ f m) base) (cong fst (sym (body-path (γ , γ∙) (m , m∙))))
@@ -148,22 +148,22 @@ module _ {ℓS ℓM : Level} (𝓜 : SimpleDirectedCwF ℓS ℓM) where
 
   FUN-preserves-β : {Γ : GluCtx} {A B : GluTy}
     (N : GluTm (Γ ▷ᵍ A) B) (M : GluTm Γ A)
-    → APP {A = A} {B = B} (LAM {A = A} {B = B} N) M ≤ N [ ⟨ idᵍ Γ , M ⟩ᵍ ]Tmᵍ
+    → APP {A = A} {B = B} (LAM {Γ = Γ} {A = A} {B = B} N) M ≤ N [ ⟨ idᵍ Γ , M ⟩ᵍ ]Tmᵍ
   FUN-preserves-β {Γ} {A} {B} N M =
     GluTm-hom (β⇒ₘ (GluTm.M° N) (GluTm.M° M)) λ γ →
-      subst2 _≤_ (sym (APP[]₀ {A = A} {B = B} (LAM {A = A} {B = B} N) M γ)) (sym (contractum γ))
+      subst2 _≤_ (sym (APP[]₀ {A = A} {B = B} (LAM {Γ = Γ} {A = A} {B = B} N) M γ)) (sym (contractum γ))
         (Σ≤ (β⇒-substₘ (GluTm.M° N) (fst γ) (fst (M [ γ ]Tm₀)))
           (contravariant-universal-from (GluTy.cA B) refl))
     where
     contractum : (γ : GluSub₀ Γ)
       → (N [ ⟨ idᵍ Γ , M ⟩ᵍ ]Tmᵍ) [ γ ]Tm₀
-        ≡ N [ ⟨_,_⟩₀ {A = A} γ (M [ γ ]Tm₀) ]Tm₀
+        ≡ N [ ⟨_,_⟩₀ {Γ = Γ} {A = A} γ (M [ γ ]Tm₀) ]Tm₀
     contractum γ =
         (N [ ⟨ idᵍ Γ , M ⟩ᵍ ]Tmᵍ) [ γ ]Tm₀
       ≡⟨ Tm-∘₀ N (⟨ idᵍ Γ , M ⟩ᵍ) γ ⟩
         N [ ⟨ idᵍ Γ , M ⟩ᵍ ∘₀ γ ]Tm₀
       ≡⟨ cong (N [_]Tm₀) (⟨id⟩-∘₀ M γ) ⟩
-        N [ ⟨_,_⟩₀ {A = A} γ (M [ γ ]Tm₀) ]Tm₀
+        N [ ⟨_,_⟩₀ {Γ = Γ} {A = A} γ (M [ γ ]Tm₀) ]Tm₀
       ∎
 
   FUNη-body : {Γ : GluCtx} {A B : GluTy}
@@ -172,7 +172,7 @@ module _ {ℓS ℓM : Level} (𝓜 : SimpleDirectedCwF ℓS ℓM) where
 
   FUNη-body[]₀ : {Γ : GluCtx} {A B : GluTy}
     (F : GluTm Γ (FUN A B)) (γ : GluSub₀ Γ) (m : GluTm₀ A)
-    → (FUNη-body {A = A} {B = B} F) [ ⟨_,_⟩₀ {A = A} γ m ]Tm₀
+    → (FUNη-body {A = A} {B = B} F) [ ⟨_,_⟩₀ {Γ = Γ} {A = A} γ m ]Tm₀
       ≡ APP₀ A B (F [ γ ]Tm₀) m
   FUNη-body[]₀ {Γ} {A} {B} F γ m =
       (FUNη-body {A = A} {B = B} F) [ δ ]Tm₀
@@ -181,15 +181,15 @@ module _ {ℓS ℓM : Level} (𝓜 : SimpleDirectedCwF ℓS ℓM) where
     ≡⟨ cong (λ f → APP₀ A B f (qᵍ {Γ} {A} [ δ ]Tm₀)) (Tm-∘₀ F (pᵍ {Γ} {A}) δ) ⟩
       APP₀ A B (F [ pᵍ {Γ} {A} ∘₀ δ ]Tm₀) (qᵍ {Γ} {A} [ δ ]Tm₀)
     ≡⟨ cong₂ (APP₀ A B)
-         (cong (F [_]Tm₀) (p-⟨⟩₀ {A = A} γ m)) (q-⟨⟩₀ {A = A} γ m) ⟩
+         (cong (F [_]Tm₀) (p-⟨⟩₀ {Γ = Γ} {A = A} γ m)) (q-⟨⟩₀ {Γ = Γ} {A = A} γ m) ⟩
       APP₀ A B (F [ γ ]Tm₀) m
     ∎
     where
     δ : GluSub₀ (Γ ▷ᵍ A)
-    δ = ⟨_,_⟩₀ {A = A} γ m
+    δ = ⟨_,_⟩₀ {Γ = Γ} {A = A} γ m
 
   FUN-preserves-η : {Γ : GluCtx} {A B : GluTy}
-    (F : GluTm Γ (FUN A B)) → LAM {A = A} {B = B} (FUNη-body {A = A} {B = B} F) ≤ F
+    (F : GluTm Γ (FUN A B)) → LAM {Γ = Γ} {A = A} {B = B} (FUNη-body {A = A} {B = B} F) ≤ F
   FUN-preserves-η {Γ = Γ} {A = A} {B = B} F = ≤ᵍ→≤ record
     { r° = η⇒ₘ (GluTm.M° F)
     ; r∙ = λ γ γ∙ →
@@ -201,7 +201,7 @@ module _ {ℓS ℓM : Level} (𝓜 : SimpleDirectedCwF ℓS ℓM) where
     where
     pointwise : (γ : Subₘ εₘ (GluCtx.Γ° Γ)) (γ∙ : GluCtx.Γ∙ Γ γ)
       (m : Tmₘ εₘ (GluTy.A° A)) (m∙ : GluTy.A∙ A m)
-      → GluTm.M∙ (LAM {A = A} {B = B} (FUNη-body {A = A} {B = B} F)) γ γ∙ m m∙
+      → GluTm.M∙ (LAM {Γ = Γ} {A = A} {B = B} (FUNη-body {A = A} {B = B} F)) γ γ∙ m m∙
         ≡ contrav-transport (GluTy.cA B)
             (hom-map (λ f → appₘ (f [ γ ]Tmₘ) m) (η⇒ₘ (GluTm.M° F)))
             (GluTm.M∙ F γ γ∙ m m∙)

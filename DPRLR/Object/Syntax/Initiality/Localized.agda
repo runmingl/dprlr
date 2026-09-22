@@ -57,17 +57,6 @@ module _ {ℓS ℓM : Level} (𝓜 : SimpleDirectedCwF ℓS ℓM) where
   private
     module M = SimpleDirectedCwF 𝓜
 
-    module _ (f : SortMorphism RawSyntaxCwF M.cwf) where
-      private
-        module F = SortMorphism f
-
-      sub-local : (Γ : M.Ctx) (Δ : R.Ctx) → isPreorder (M.Sub Γ (F.Ctxᶠ Δ))
-      sub-local Γ R.ε = subst (λ Δ → isPreorder (M.Sub Γ Δ)) (sym F.εᶠ)
-        (isProp→isPreorder (λ σ τ → M.εη σ ∙ sym (M.εη τ)))
-      sub-local Γ (Δ R.▷ A) =
-        subst (λ Δ → isPreorder (M.Sub Γ Δ)) (sym (F.▷ᶠ Δ A))
-          (M.sub-extension-local Γ (F.Ctxᶠ Δ) (F.Tyᶠ A) (sub-local Γ Δ))
-
   extendMorphism : SimpleMorphism RawSyntaxCwF M.cwf
     → SimpleMorphism LocalizedSyntaxCwF M.cwf
   extendMorphism f = simple-morphism sorts over
@@ -75,7 +64,7 @@ module _ {ℓS ℓM : Level} (𝓜 : SimpleDirectedCwF ℓS ℓM) where
     module F = SimpleMorphism f
 
     Subᶠ : {Γ Δ : R.Ctx} → Subᴾ Γ Δ → M.Sub (F.Ctxᶠ Γ) (F.Ctxᶠ Δ)
-    Subᶠ {Γ} {Δ} = rec (sub-local F.sorts (F.Ctxᶠ Γ) Δ) F.Subᶠ
+    Subᶠ = rec (M.sub-local _ _) F.Subᶠ
 
     Tmᶠ : {Γ : R.Ctx} {A : R.Ty} → Tmᴾ Γ A → M.Tm (F.Ctxᶠ Γ) (F.Tyᶠ A)
     Tmᶠ = rec (M.tm-local _ _) F.Tmᶠ
@@ -89,16 +78,15 @@ module _ {ℓS ℓM : Level} (𝓜 : SimpleDirectedCwF ℓS ℓM) where
     MorphismOver.Subᶠ over = Subᶠ
     MorphismOver.Tmᶠ over = Tmᶠ
     MorphismOver.idᶠ over = F.idᶠ
-    MorphismOver.∘ᶠ over {Δ = Δ} = rec-unique₂ (sub-local F.sorts _ Δ)
+    MorphismOver.∘ᶠ over = rec-unique₂ (M.sub-local _ _)
       (λ τ σ → Subᶠ (τ ∘ᴾ σ)) (λ τ σ → Subᶠ τ M.∘ Subᶠ σ) F.∘ᶠ
     MorphismOver.ε-subᶠ over = F.ε-subᶠ
     MorphismOver.pᶠ over = F.pᶠ
     MorphismOver.qᶠ over = F.qᶠ
-    MorphismOver.⟨⟩ᶠ over {Δ = Δ} {A = A} =
-      rec-uniqueP₂ (M.sub-extension-local _ (F.Ctxᶠ Δ) (F.Tyᶠ A) (sub-local F.sorts _ Δ))
+    MorphismOver.⟨⟩ᶠ over =
+      rec-uniqueP₂ (M.sub-local _ _)
         (λ σ t → Subᶠ ⟨ σ , t ⟩ᴾ) (λ σ t → M.⟨ Subᶠ σ , Tmᶠ t ⟩) F.⟨⟩ᶠ
-    MorphismOver.[]ᶠ over = rec-unique₂ (M.tm-local _ _)
-      (λ t σ → Tmᶠ (t [ σ ]Tmᴾ)) (λ t σ → Tmᶠ t M.[ Subᶠ σ ]Tm) F.[]ᶠ
+    MorphismOver.[]ᶠ over = rec-unique₂ (M.tm-local _ _) (λ t σ → Tmᶠ (t [ σ ]Tmᴾ)) (λ t σ → Tmᶠ t M.[ Subᶠ σ ]Tm) F.[]ᶠ
     MorphismOver.trueᶠ over = F.trueᶠ
     MorphismOver.falseᶠ over = F.falseᶠ
     MorphismOver.ifᶠ over = rec-unique₃ (M.tm-local _ _)
@@ -130,9 +118,7 @@ module _ {ℓS ℓM : Level} (𝓜 : SimpleDirectedCwF ℓS ℓM) where
       → extendMorphism (restrictMorphism f) ≡ f
     retraction f = cong (simple-morphism F.sorts)
       (morphismOver-path M.sub-set M.tm-set
-        (λ {Γ} {Δ} →
-          rec-unique (sub-local (SimpleMorphism.sorts (restrictMorphism f)) (F.Ctxᶠ Γ) Δ)
-            E.Subᶠ F.Subᶠ (λ _ → refl))
+        (rec-unique (M.sub-local _ _) E.Subᶠ F.Subᶠ (λ _ → refl))
         (rec-unique (M.tm-local _ _) E.Tmᶠ F.Tmᶠ (λ _ → refl)))
       where
       module F = SimpleMorphism f

@@ -61,6 +61,8 @@ SimpleCwF.η× LocalizedSyntaxCwF = η×ᴾ
 LocalizedSyntaxModel : SimpleDirectedCwF ℓ-zero ℓ-zero
 SimpleDirectedCwF.cwf LocalizedSyntaxModel = LocalizedSyntaxCwF
 SimpleDirectedCwF.sub-set LocalizedSyntaxModel Γ Δ = Subᴾ-isSet
+SimpleDirectedCwF.sub-thin LocalizedSyntaxModel Γ Δ = Subᴾ-isThin
+SimpleDirectedCwF.sub-segal LocalizedSyntaxModel Γ Δ = Subᴾ-isSegal
 SimpleDirectedCwF.tm-set LocalizedSyntaxModel Γ A = Tmᴾ-isSet
 SimpleDirectedCwF.tm-thin LocalizedSyntaxModel Γ A = Tmᴾ-isThin
 SimpleDirectedCwF.tm-segal LocalizedSyntaxModel Γ A = Tmᴾ-isSegal

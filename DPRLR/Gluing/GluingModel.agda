@@ -7,7 +7,7 @@ open import DPRLR.Object.Model.Model public
 
 open import DPRLR.Gluing.LogicalRelations.Judgment public
   using
-    ( GluCtx ; Γ° ; Γ∙
+    ( GluCtx ; Γ° ; Γ∙ ; cΓ
     ; GluSub ; σ° ; σ∙
     ; GluTy ; A° ; A∙ ; cA
     ; GluTm ; M° ; M∙

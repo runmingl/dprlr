@@ -52,7 +52,8 @@ import DPRLR.Simplicial.Hom using
 {-
     Section 2.2.
     A model is a simply typed CwF with booleans, products, functions, and
-    directed beta/eta reductions.
+    directed beta/eta reductions. In a directed model, substitution and term
+    types are both set, thin, and Segal.
 -}
 import DPRLR.Object.Model.Model using
   ( SimpleCwF

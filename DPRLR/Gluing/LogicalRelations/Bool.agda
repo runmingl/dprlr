@@ -71,19 +71,19 @@ module _ {ℓS ℓM : Level} (𝓜 : SimpleDirectedCwF ℓS ℓM) where
     {Γ : GluCtx}
     → GluTm Γ BOOL
   GluTm.M° TRUE = trueₘ
-  GluTm.M∙ TRUE = TRUE∙
+  GluTm.M∙ (TRUE {Γ = Γ}) = TRUE∙ {Γ = Γ}
 
   FALSE :
     {Γ : GluCtx}
     → GluTm Γ BOOL
   GluTm.M° FALSE = falseₘ
-  GluTm.M∙ FALSE = FALSE∙
+  GluTm.M∙ (FALSE {Γ = Γ}) = FALSE∙ {Γ = Γ}
 
   TRUE₀ FALSE₀ : GluTm₀ BOOL
   TRUE₀ = trueₘ , true₂ , hom-refl trueₘ
   FALSE₀ = falseₘ , false₂ , hom-refl falseₘ
 
-  TRUE[]₀ : {Γ : GluCtx} (γ : GluSub₀ Γ) → TRUE [ γ ]Tm₀ ≡ TRUE₀
+  TRUE[]₀ : {Γ : GluCtx} (γ : GluSub₀ Γ) → TRUE {Γ = Γ} [ γ ]Tm₀ ≡ TRUE₀
   TRUE[]₀ (γ , γ∙) = ΣPathP (true[]ₘ γ , λ i → true₂ , arrow i)
     where
     arrow : PathP (λ i → true[]ₘ γ i ≤ trueₘ)
@@ -91,7 +91,7 @@ module _ {ℓS ℓM : Level} (𝓜 : SimpleDirectedCwF ℓS ℓM) where
     arrow = isProp→PathP (λ i → tm-thinₘ εₘ Boolₘ (true[]ₘ γ i) trueₘ)
       (path→hom (true[]ₘ γ)) (hom-refl trueₘ)
 
-  FALSE[]₀ : {Γ : GluCtx} (γ : GluSub₀ Γ) → FALSE [ γ ]Tm₀ ≡ FALSE₀
+  FALSE[]₀ : {Γ : GluCtx} (γ : GluSub₀ Γ) → FALSE {Γ = Γ} [ γ ]Tm₀ ≡ FALSE₀
   FALSE[]₀ (γ , γ∙) = ΣPathP (false[]ₘ γ , λ i → false₂ , arrow i)
     where
     arrow : PathP (λ i → false[]ₘ γ i ≤ falseₘ)
@@ -101,26 +101,26 @@ module _ {ℓS ℓM : Level} (𝓜 : SimpleDirectedCwF ℓS ℓM) where
 
   TRUE[] : {Γ Δ : GluCtx} (σ : GluSub Γ Δ)
     → (TRUE {Γ = Δ}) [ σ ]Tmᵍ ≡ TRUE {Γ = Γ}
-  TRUE[] σ = GluTm-ext (true[]ₘ (GluSub.σ° σ)) λ γ →
+  TRUE[] {Γ} {Δ} σ = GluTm-ext (true[]ₘ (GluSub.σ° σ)) λ γ →
       (TRUE [ σ ]Tmᵍ) [ γ ]Tm₀
     ≡⟨ Tm-∘₀ TRUE σ γ ⟩
-      TRUE [ σ ∘₀ γ ]Tm₀
-    ≡⟨ TRUE[]₀ (σ ∘₀ γ) ⟩
+      TRUE {Γ = Δ} [ σ ∘₀ γ ]Tm₀
+    ≡⟨ TRUE[]₀ {Γ = Δ} (σ ∘₀ γ) ⟩
       TRUE₀
-    ≡⟨ sym (TRUE[]₀ γ) ⟩
-      TRUE [ γ ]Tm₀
+    ≡⟨ sym (TRUE[]₀ {Γ = Γ} γ) ⟩
+      TRUE {Γ = Γ} [ γ ]Tm₀
     ∎
 
   FALSE[] : {Γ Δ : GluCtx} (σ : GluSub Γ Δ)
     → (FALSE {Γ = Δ}) [ σ ]Tmᵍ ≡ FALSE {Γ = Γ}
-  FALSE[] σ = GluTm-ext (false[]ₘ (GluSub.σ° σ)) λ γ →
+  FALSE[] {Γ} {Δ} σ = GluTm-ext (false[]ₘ (GluSub.σ° σ)) λ γ →
       (FALSE [ σ ]Tmᵍ) [ γ ]Tm₀
     ≡⟨ Tm-∘₀ FALSE σ γ ⟩
-      FALSE [ σ ∘₀ γ ]Tm₀
-    ≡⟨ FALSE[]₀ (σ ∘₀ γ) ⟩
+      FALSE {Γ = Δ} [ σ ∘₀ γ ]Tm₀
+    ≡⟨ FALSE[]₀ {Γ = Δ} (σ ∘₀ γ) ⟩
       FALSE₀
-    ≡⟨ sym (FALSE[]₀ γ) ⟩
-      FALSE [ γ ]Tm₀
+    ≡⟨ sym (FALSE[]₀ {Γ = Γ} γ) ⟩
+      FALSE {Γ = Γ} [ γ ]Tm₀
     ∎
 
   βIF-TRUE[] :

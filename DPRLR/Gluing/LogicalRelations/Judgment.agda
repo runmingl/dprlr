@@ -32,6 +32,7 @@ module DPRLR.Gluing.LogicalRelations.Judgment
     field
       Γ° : Ctxₘ
       Γ∙ : Subₘ εₘ Γ° → Type ℓM
+      cΓ : isContravariant Γ∙
 
   open GluCtx public
 
