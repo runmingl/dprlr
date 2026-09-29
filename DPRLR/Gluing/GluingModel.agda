@@ -6,12 +6,7 @@ open import DPRLR.Object.Model.Model public
   using (SimpleCwF ; SimpleDirectedCwF)
 
 open import DPRLR.Gluing.LogicalRelations.Judgment public
-  using
-    ( GluCtx ; Γ° ; Γ∙ ; cΓ
-    ; GluSub ; σ° ; σ∙
-    ; GluTy ; A° ; A∙ ; cA
-    ; GluTm ; M° ; M∙
-    )
+  using (GluCtx ; GluSub ; GluTy ; GluTm)
 
 open import DPRLR.Gluing.LogicalRelations.Substitution public
   using
@@ -19,7 +14,7 @@ open import DPRLR.Gluing.LogicalRelations.Substitution public
     ; ε-subᵍ ; εηᵍ
     ; idᵍ ; _∘ᵍ_ ; id-leftᵍ ; id-rightᵍ ; ∘-assocᵍ
     ; _[_]Tmᵍ ; Tm-idᵍ ; Tm-∘ᵍ
-    ; _▷ᵍ_ ; pᵍ ; qᵍ ; ⟨_,_⟩ᵍ ; liftᵍ ; p-⟨⟩ᵍ ; q-⟨⟩ᵍ
+    ; _▷ᵍ_ ; pᵍ ; qᵍ ; ⟨_,_⟩ᵍ ; p-⟨⟩ᵍ ; q-⟨⟩ᵍ
     ; ▷ηᵍ ; ⟨⟩-∘ᵍ
     )
 

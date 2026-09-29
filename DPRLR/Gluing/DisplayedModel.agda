@@ -1,11 +1,11 @@
 module DPRLR.Gluing.DisplayedModel where
 
 open import Cubical.Foundations.Prelude
-  using (Level ; Type ; ℓ-suc ; ℓ-max ; isSet ; isProp→isSet)
+  using (isSet ; isProp→isSet)
 open import Cubical.Foundations.HLevels
   using (isSetΣ ; isSetΠ2 ; isSet×)
 open import Cubical.Data.Bool.Properties using (isSetBool)
-open import Cubical.Data.Sigma hiding (Sub)
+open import Cubical.Data.Sigma
 open import Cubical.Data.Unit using (isSetUnit*)
 
 open import DPRLR.Simplicial.Hom
@@ -19,7 +19,7 @@ open import DPRLR.Simplicial.Contravariant
     )
 open import DPRLR.Object.Model.DisplayedModel
 open import DPRLR.Gluing.GluingModel
-open import DPRLR.Gluing.LogicalRelations.Judgment using (_≤ᵍ_ ; r° ; r∙ ; ≤→≤ᵍ)
+open import DPRLR.Gluing.LogicalRelations.Judgment using (_≤ᵍ_ ; ≤→≤ᵍ)
 open import DPRLR.Gluing.LogicalRelations.Bool using (⌜_⌝)
 
 module _ {ℓS ℓM : Level} (𝓜 : SimpleDirectedCwF ℓS ℓM) where

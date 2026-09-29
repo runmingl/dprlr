@@ -3,7 +3,6 @@ module DPRLR.Object.Model.Morphism.Properties where
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.HLevels
   using (isOfHLevelPathP' ; isContrΣ' ; isOfHLevelRetract)
-open import Cubical.Data.Sigma using (fst ; _,_)
 
 open import DPRLR.Object.Model.Model using (SimpleCwF)
 open import DPRLR.Object.Model.Morphism.Base using

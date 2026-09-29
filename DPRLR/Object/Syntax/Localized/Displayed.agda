@@ -1,7 +1,6 @@
 module DPRLR.Object.Syntax.Localized.Displayed where
 
 open import Cubical.Foundations.Prelude
-open import Cubical.Data.Sigma using (fst ; snd)
 
 open import DPRLR.Object.Model.Model using (SimpleCwF)
 open import DPRLR.Object.Model.DisplayedModel

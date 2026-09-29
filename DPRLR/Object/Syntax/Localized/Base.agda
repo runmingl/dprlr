@@ -412,52 +412,18 @@ snd[]ᴾ P σ =
 βif-true-leftᴾ :
   (T F : Tmᴾ Γ A)
   → βif-true-relᴾ T F 𝟎 ≡ ifᴾ trueᴾ T F
-βif-true-leftᴾ T F =
-  funExt⁻ (funExt⁻ path T) F
-  where
-  path :
-    (λ T F → βif-true-relᴾ T F 𝟎)
-      ≡
-    (λ T F → ifᴾ trueᴾ T F)
-  path =
-    funExt
-    (rec-unique
-      (isPreorderΠ λ _ → isPreorderP)
-      (λ T F → βif-true-relᴾ T F 𝟎)
-      (λ T F → ifᴾ trueᴾ T F)
-      (λ T₀ →
-        funExt
-        (rec-unique
-          isPreorderP
-          (λ F → βif-true-relᴾ (ηᴾ T₀) F 𝟎)
-          (λ F → ifᴾ trueᴾ (ηᴾ T₀) F)
-          (λ F₀ → cong ηᴾ (Raw.βif-true-left T₀ F₀))))
-    )
+βif-true-leftᴾ = rec-unique₂ isPreorderP
+  (λ T F → βif-true-relᴾ T F 𝟎)
+  (λ T F → ifᴾ trueᴾ T F)
+  (λ T F → cong ηᴾ (Raw.βif-true-left T F))
 
 βif-true-rightᴾ :
   (T F : Tmᴾ Γ A)
   → βif-true-relᴾ T F 𝟏 ≡ T
-βif-true-rightᴾ T F =
-  funExt⁻ (funExt⁻ path T) F
-  where
-  path :
-    (λ T F → βif-true-relᴾ T F 𝟏)
-      ≡
-    (λ T F → T)
-  path =
-    funExt
-    (rec-unique
-      (isPreorderΠ λ _ → isPreorderP)
-      (λ T F → βif-true-relᴾ T F 𝟏)
-      (λ T F → T)
-      (λ T₀ →
-        funExt
-        (rec-unique
-          isPreorderP
-          (λ F → βif-true-relᴾ (ηᴾ T₀) F 𝟏)
-          (λ _ → ηᴾ T₀)
-          (λ F₀ → cong ηᴾ (Raw.βif-true-right T₀ F₀))))
-    )
+βif-true-rightᴾ = rec-unique₂ isPreorderP
+  (λ T F → βif-true-relᴾ T F 𝟏)
+  (λ T F → T)
+  (λ T F → cong ηᴾ (Raw.βif-true-right T F))
 
 βif-trueᴾ :
   (T F : Tmᴾ Γ A)
@@ -481,52 +447,18 @@ snd[]ᴾ P σ =
 βif-false-leftᴾ :
   (T F : Tmᴾ Γ A)
   → βif-false-relᴾ T F 𝟎 ≡ ifᴾ falseᴾ T F
-βif-false-leftᴾ T F =
-  funExt⁻ (funExt⁻ path T) F
-  where
-  path :
-    (λ T F → βif-false-relᴾ T F 𝟎)
-      ≡
-    (λ T F → ifᴾ falseᴾ T F)
-  path =
-    funExt
-    (rec-unique
-      (isPreorderΠ λ _ → isPreorderP)
-      (λ T F → βif-false-relᴾ T F 𝟎)
-      (λ T F → ifᴾ falseᴾ T F)
-      (λ T₀ →
-        funExt
-        (rec-unique
-          isPreorderP
-          (λ F → βif-false-relᴾ (ηᴾ T₀) F 𝟎)
-          (λ F → ifᴾ falseᴾ (ηᴾ T₀) F)
-          (λ F₀ → cong ηᴾ (Raw.βif-false-left T₀ F₀))))
-    )
+βif-false-leftᴾ = rec-unique₂ isPreorderP
+  (λ T F → βif-false-relᴾ T F 𝟎)
+  (λ T F → ifᴾ falseᴾ T F)
+  (λ T F → cong ηᴾ (Raw.βif-false-left T F))
 
 βif-false-rightᴾ :
   (T F : Tmᴾ Γ A)
   → βif-false-relᴾ T F 𝟏 ≡ F
-βif-false-rightᴾ T F =
-  funExt⁻ (funExt⁻ path T) F
-  where
-  path :
-    (λ T F → βif-false-relᴾ T F 𝟏)
-      ≡
-    (λ T F → F)
-  path =
-    funExt
-    (rec-unique
-      (isPreorderΠ λ _ → isPreorderP)
-      (λ T F → βif-false-relᴾ T F 𝟏)
-      (λ T F → F)
-      (λ T₀ →
-        funExt
-        (rec-unique
-          isPreorderP
-          (λ F → βif-false-relᴾ (ηᴾ T₀) F 𝟏)
-          (λ F → F)
-          (λ F₀ → cong ηᴾ (Raw.βif-false-right T₀ F₀))))
-    )
+βif-false-rightᴾ = rec-unique₂ isPreorderP
+  (λ T F → βif-false-relᴾ T F 𝟏)
+  (λ T F → F)
+  (λ T F → cong ηᴾ (Raw.βif-false-right T F))
 
 βif-falseᴾ :
   (T F : Tmᴾ Γ A)
@@ -591,52 +523,18 @@ app[]ᴾ F M σ =
 β×₁-leftᴾ :
   (M : Tmᴾ Γ A) (N : Tmᴾ Γ B)
   → β×₁-relᴾ M N 𝟎 ≡ fstᴾ (pairᴾ M N)
-β×₁-leftᴾ M N =
-  funExt⁻ (funExt⁻ path M) N
-  where
-  path :
-    (λ M N → β×₁-relᴾ M N 𝟎)
-      ≡
-    (λ M N → fstᴾ (pairᴾ M N))
-  path =
-    funExt
-    (rec-unique
-      (isPreorderΠ λ _ → isPreorderP)
-      (λ M N → β×₁-relᴾ M N 𝟎)
-      (λ M N → fstᴾ (pairᴾ M N))
-      (λ M₀ →
-        funExt
-        (rec-unique
-          isPreorderP
-          (λ N → β×₁-relᴾ (ηᴾ M₀) N 𝟎)
-          (λ N → fstᴾ (pairᴾ (ηᴾ M₀) N))
-          (λ N₀ → cong ηᴾ (Raw.β×₁-left M₀ N₀))))
-    )
+β×₁-leftᴾ = rec-unique₂ isPreorderP
+  (λ M N → β×₁-relᴾ M N 𝟎)
+  (λ M N → fstᴾ (pairᴾ M N))
+  (λ M N → cong ηᴾ (Raw.β×₁-left M N))
 
 β×₁-rightᴾ :
   (M : Tmᴾ Γ A) (N : Tmᴾ Γ B)
   → β×₁-relᴾ M N 𝟏 ≡ M
-β×₁-rightᴾ M N =
-  funExt⁻ (funExt⁻ path M) N
-  where
-  path :
-    (λ M N → β×₁-relᴾ M N 𝟏)
-      ≡
-    (λ M N → M)
-  path =
-    funExt
-    (rec-unique
-      (isPreorderΠ λ _ → isPreorderP)
-      (λ M N → β×₁-relᴾ M N 𝟏)
-      (λ M N → M)
-      (λ M₀ →
-        funExt
-        (rec-unique
-          isPreorderP
-          (λ N → β×₁-relᴾ (ηᴾ M₀) N 𝟏)
-          (λ _ → ηᴾ M₀)
-          (λ N₀ → cong ηᴾ (Raw.β×₁-right M₀ N₀))))
-    )
+β×₁-rightᴾ = rec-unique₂ isPreorderP
+  (λ M N → β×₁-relᴾ M N 𝟏)
+  (λ M N → M)
+  (λ M N → cong ηᴾ (Raw.β×₁-right M N))
 
 β×₁ᴾ :
   (M : Tmᴾ Γ A) (N : Tmᴾ Γ B)
@@ -660,52 +558,18 @@ app[]ᴾ F M σ =
 β×₂-leftᴾ :
   (M : Tmᴾ Γ A) (N : Tmᴾ Γ B)
   → β×₂-relᴾ M N 𝟎 ≡ sndᴾ (pairᴾ M N)
-β×₂-leftᴾ M N =
-  funExt⁻ (funExt⁻ path M) N
-  where
-  path :
-    (λ M N → β×₂-relᴾ M N 𝟎)
-      ≡
-    (λ M N → sndᴾ (pairᴾ M N))
-  path =
-    funExt
-    (rec-unique
-      (isPreorderΠ λ _ → isPreorderP)
-      (λ M N → β×₂-relᴾ M N 𝟎)
-      (λ M N → sndᴾ (pairᴾ M N))
-      (λ M₀ →
-        funExt
-        (rec-unique
-          isPreorderP
-          (λ N → β×₂-relᴾ (ηᴾ M₀) N 𝟎)
-          (λ N → sndᴾ (pairᴾ (ηᴾ M₀) N))
-          (λ N₀ → cong ηᴾ (Raw.β×₂-left M₀ N₀))))
-    )
+β×₂-leftᴾ = rec-unique₂ isPreorderP
+  (λ M N → β×₂-relᴾ M N 𝟎)
+  (λ M N → sndᴾ (pairᴾ M N))
+  (λ M N → cong ηᴾ (Raw.β×₂-left M N))
 
 β×₂-rightᴾ :
   (M : Tmᴾ Γ A) (N : Tmᴾ Γ B)
   → β×₂-relᴾ M N 𝟏 ≡ N
-β×₂-rightᴾ M N =
-  funExt⁻ (funExt⁻ path M) N
-  where
-  path :
-    (λ M N → β×₂-relᴾ M N 𝟏)
-      ≡
-    (λ M N → N)
-  path =
-    funExt
-    (rec-unique
-      (isPreorderΠ λ _ → isPreorderP)
-      (λ M N → β×₂-relᴾ M N 𝟏)
-      (λ M N → N)
-      (λ M₀ →
-        funExt
-        (rec-unique
-          isPreorderP
-          (λ N → β×₂-relᴾ (ηᴾ M₀) N 𝟏)
-          (λ N → N)
-          (λ N₀ → cong ηᴾ (Raw.β×₂-right M₀ N₀))))
-    )
+β×₂-rightᴾ = rec-unique₂ isPreorderP
+  (λ M N → β×₂-relᴾ M N 𝟏)
+  (λ M N → N)
+  (λ M N → cong ηᴾ (Raw.β×₂-right M N))
 
 β×₂ᴾ :
   (M : Tmᴾ Γ A) (N : Tmᴾ Γ B)
@@ -725,38 +589,18 @@ app[]ᴾ F M σ =
 η×-leftᴾ :
   (P : Tmᴾ Γ (A Raw.×ᵗʸ B))
   → η×-relᴾ P 𝟎 ≡ pairᴾ (fstᴾ P) (sndᴾ P)
-η×-leftᴾ P =
-  funExt⁻ path P
-  where
-  path :
-    (λ P → η×-relᴾ P 𝟎)
-      ≡
-    (λ P → pairᴾ (fstᴾ P) (sndᴾ P))
-  path =
-    funExt
-    (rec-unique
-      isPreorderP
-      (λ P → η×-relᴾ P 𝟎)
-      (λ P → pairᴾ (fstᴾ P) (sndᴾ P))
-      (λ P₀ → cong ηᴾ (Raw.η×-left P₀)))
+η×-leftᴾ = rec-unique isPreorderP
+  (λ P → η×-relᴾ P 𝟎)
+  (λ P → pairᴾ (fstᴾ P) (sndᴾ P))
+  (λ P → cong ηᴾ (Raw.η×-left P))
 
 η×-rightᴾ :
   (P : Tmᴾ Γ (A Raw.×ᵗʸ B))
   → η×-relᴾ P 𝟏 ≡ P
-η×-rightᴾ P =
-  funExt⁻ path P
-  where
-  path :
-    (λ P → η×-relᴾ P 𝟏)
-      ≡
-    (λ P → P)
-  path =
-    funExt
-    (rec-unique
-      isPreorderP
-      (λ P → η×-relᴾ P 𝟏)
-      (λ P → P)
-      (λ P₀ → cong ηᴾ (Raw.η×-right P₀)))
+η×-rightᴾ = rec-unique isPreorderP
+  (λ P → η×-relᴾ P 𝟏)
+  (λ P → P)
+  (λ P → cong ηᴾ (Raw.η×-right P))
 
 η×ᴾ :
   (P : Tmᴾ Γ (A Raw.×ᵗʸ B))
@@ -780,52 +624,18 @@ app[]ᴾ F M σ =
 β⇒-leftᴾ :
   (N : Tmᴾ (Γ Raw.▷ A) B) (M : Tmᴾ Γ A)
   → β⇒-relᴾ N M 𝟎 ≡ appᴾ (lamᴾ N) M
-β⇒-leftᴾ N M =
-  funExt⁻ (funExt⁻ path N) M
-  where
-  path :
-    (λ N M → β⇒-relᴾ N M 𝟎)
-      ≡
-    (λ N M → appᴾ (lamᴾ N) M)
-  path =
-    funExt
-    (rec-unique
-      (isPreorderΠ λ _ → isPreorderP)
-      (λ N M → β⇒-relᴾ N M 𝟎)
-      (λ N M → appᴾ (lamᴾ N) M)
-      (λ N₀ →
-        funExt
-        (rec-unique
-          isPreorderP
-          (λ M → β⇒-relᴾ (ηᴾ N₀) M 𝟎)
-          (λ M → appᴾ (lamᴾ (ηᴾ N₀)) M)
-          (λ M₀ → cong ηᴾ (Raw.β⇒-left N₀ M₀))))
-    )
+β⇒-leftᴾ = rec-unique₂ isPreorderP
+  (λ N M → β⇒-relᴾ N M 𝟎)
+  (λ N M → appᴾ (lamᴾ N) M)
+  (λ N M → cong ηᴾ (Raw.β⇒-left N M))
 
 β⇒-rightᴾ :
   (N : Tmᴾ (Γ Raw.▷ A) B) (M : Tmᴾ Γ A)
   → β⇒-relᴾ N M 𝟏 ≡ N [ ⟨ idᴾ , M ⟩ᴾ ]Tmᴾ
-β⇒-rightᴾ N M =
-  funExt⁻ (funExt⁻ path N) M
-  where
-  path :
-    (λ N M → β⇒-relᴾ N M 𝟏)
-      ≡
-    (λ N M → N [ ⟨ idᴾ , M ⟩ᴾ ]Tmᴾ)
-  path =
-    funExt
-    (rec-unique
-      (isPreorderΠ λ _ → isPreorderP)
-      (λ N M → β⇒-relᴾ N M 𝟏)
-      (λ N M → N [ ⟨ idᴾ , M ⟩ᴾ ]Tmᴾ)
-      (λ N₀ →
-        funExt
-        (rec-unique
-          isPreorderP
-          (λ M → β⇒-relᴾ (ηᴾ N₀) M 𝟏)
-          (λ M → ηᴾ N₀ [ ⟨ idᴾ , M ⟩ᴾ ]Tmᴾ)
-          (λ M₀ → cong ηᴾ (Raw.β⇒-right N₀ M₀))))
-    )
+β⇒-rightᴾ = rec-unique₂ isPreorderP
+  (λ N M → β⇒-relᴾ N M 𝟏)
+  (λ N M → N [ ⟨ idᴾ , M ⟩ᴾ ]Tmᴾ)
+  (λ N M → cong ηᴾ (Raw.β⇒-right N M))
 
 β⇒ᴾ :
   (N : Tmᴾ (Γ Raw.▷ A) B) (M : Tmᴾ Γ A)
@@ -845,38 +655,18 @@ app[]ᴾ F M σ =
 η⇒-leftᴾ :
   (F : Tmᴾ Γ (A Raw.⇒ᵗʸ B))
   → η⇒-relᴾ F 𝟎 ≡ lamᴾ (appᴾ (F [ pᴾ ]Tmᴾ) qᴾ)
-η⇒-leftᴾ F =
-  funExt⁻ path F
-  where
-  path :
-    (λ F → η⇒-relᴾ F 𝟎)
-      ≡
-    (λ F → lamᴾ (appᴾ (F [ pᴾ ]Tmᴾ) qᴾ))
-  path =
-    funExt
-    (rec-unique
-      isPreorderP
-      (λ F → η⇒-relᴾ F 𝟎)
-      (λ F → lamᴾ (appᴾ (F [ pᴾ ]Tmᴾ) qᴾ))
-      (λ F₀ → cong ηᴾ (Raw.η⇒-left F₀)))
+η⇒-leftᴾ = rec-unique isPreorderP
+  (λ F → η⇒-relᴾ F 𝟎)
+  (λ F → lamᴾ (appᴾ (F [ pᴾ ]Tmᴾ) qᴾ))
+  (λ F → cong ηᴾ (Raw.η⇒-left F))
 
 η⇒-rightᴾ :
   (F : Tmᴾ Γ (A Raw.⇒ᵗʸ B))
   → η⇒-relᴾ F 𝟏 ≡ F
-η⇒-rightᴾ F =
-  funExt⁻ path F
-  where
-  path :
-    (λ F → η⇒-relᴾ F 𝟏)
-      ≡
-    (λ F → F)
-  path =
-    funExt
-    (rec-unique
-      isPreorderP
-      (λ F → η⇒-relᴾ F 𝟏)
-      (λ F → F)
-      (λ F₀ → cong ηᴾ (Raw.η⇒-right F₀)))
+η⇒-rightᴾ = rec-unique isPreorderP
+  (λ F → η⇒-relᴾ F 𝟏)
+  (λ F → F)
+  (λ F → cong ηᴾ (Raw.η⇒-right F))
 
 η⇒ᴾ :
   (F : Tmᴾ Γ (A Raw.⇒ᵗʸ B))

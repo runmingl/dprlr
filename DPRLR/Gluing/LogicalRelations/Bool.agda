@@ -4,6 +4,8 @@ open import Cubical.Foundations.Prelude
 open import Cubical.Data.Bool.Base renaming (Bool to Bool₂ ; true to true₂ ; false to false₂)
 open import Cubical.Data.Sigma
 
+open import DPRLR.Cubical.Path using (ΣPathP-subst)
+open import DPRLR.Simplicial.Product using (Σ≤)
 open import DPRLR.Simplicial.Hom
 open import DPRLR.Simplicial.Contravariant
 open import DPRLR.Simplicial.Discrete
@@ -123,129 +125,40 @@ module _ {ℓS ℓM : Level} (𝓜 : SimpleDirectedCwF ℓS ℓM) where
       FALSE {Γ = Γ} [ γ ]Tm₀
     ∎
 
-  βIF-TRUE[] :
-    {Γ : GluCtx}
-    {A : GluTy}
-    (B : GluTm Γ BOOL)
-    (T F : GluTm Γ A)
-    (γ° : Subₘ εₘ (GluCtx.Γ° Γ))
-    → GluTm.M° B [ γ° ]Tmₘ ≤ trueₘ
-    → (ifₘ GluTm.M° B then GluTm.M° T else GluTm.M° F) [ γ° ]Tmₘ
-      ≤ GluTm.M° T [ γ° ]Tmₘ
-  βIF-TRUE[] B T F γ° B≤true =
-    subst
-      (λ s → s ≤ GluTm.M° T [ γ° ]Tmₘ)
-      (sym (if[]ₘ (GluTm.M° B) (GluTm.M° T) (GluTm.M° F) γ°))
-      (
-          ifₘ GluTm.M° B [ γ° ]Tmₘ then GluTm.M° T [ γ° ]Tmₘ else GluTm.M° F [ γ° ]Tmₘ
-        ≤⟨ hom-map (λ Bγ → ifₘ Bγ then GluTm.M° T [ γ° ]Tmₘ else GluTm.M° F [ γ° ]Tmₘ) B≤true ⟩
-          ifₘ trueₘ then GluTm.M° T [ γ° ]Tmₘ else GluTm.M° F [ γ° ]Tmₘ
-        ≤⟨ βif-trueₘ (GluTm.M° T [ γ° ]Tmₘ) (GluTm.M° F [ γ° ]Tmₘ) ⟩
-          GluTm.M° T [ γ° ]Tmₘ
-        ∎≤)
-
-  βIF-FALSE[] :
-    {Γ : GluCtx}
-    {A : GluTy}
-    (B : GluTm Γ BOOL)
-    (T F : GluTm Γ A)
-    (γ° : Subₘ εₘ (GluCtx.Γ° Γ))
-    → GluTm.M° B [ γ° ]Tmₘ ≤ falseₘ
-    → (ifₘ GluTm.M° B then GluTm.M° T else GluTm.M° F) [ γ° ]Tmₘ
-      ≤ GluTm.M° F [ γ° ]Tmₘ
-  βIF-FALSE[] B T F γ° B≤false =
-    subst
-      (λ s → s ≤ GluTm.M° F [ γ° ]Tmₘ)
-      (sym (if[]ₘ (GluTm.M° B) (GluTm.M° T) (GluTm.M° F) γ°))
-      (
-          ifₘ GluTm.M° B [ γ° ]Tmₘ then GluTm.M° T [ γ° ]Tmₘ else GluTm.M° F [ γ° ]Tmₘ
-        ≤⟨ hom-map (λ Bγ → ifₘ Bγ then GluTm.M° T [ γ° ]Tmₘ else GluTm.M° F [ γ° ]Tmₘ) B≤false ⟩
-          ifₘ falseₘ then GluTm.M° T [ γ° ]Tmₘ else GluTm.M° F [ γ° ]Tmₘ
-        ≤⟨ βif-falseₘ (GluTm.M° T [ γ° ]Tmₘ) (GluTm.M° F [ γ° ]Tmₘ) ⟩
-          GluTm.M° F [ γ° ]Tmₘ
-        ∎≤)
-
-  IF :
-    {Γ : GluCtx}
-    {A : GluTy}
-    → GluTm Γ BOOL
-    → GluTm Γ A
-    → GluTm Γ A
-    → GluTm Γ A
-  GluTm.M° (IF B T F) =
-    ifₘ GluTm.M° B then GluTm.M° T else GluTm.M° F
-  GluTm.M∙ (IF {A = A} B T F) γ° γ∙ with GluTm.M∙ B γ° γ∙
-  ... | true₂ , B≤true =
-    contrav-transport
-      (GluTy.cA A)
-      (βIF-TRUE[] B T F γ° B≤true)
-      (GluTm.M∙ T γ° γ∙)
-  ... | false₂ , B≤false =
-    contrav-transport
-      (GluTy.cA A)
-      (βIF-FALSE[] B T F γ° B≤false)
-      (GluTm.M∙ F γ° γ∙)
-
   IF₀ : (A : GluTy)
     → GluTm₀ BOOL → GluTm₀ A → GluTm₀ A → GluTm₀ A
-  IF₀ A (b , true₂ , h) (t , t∙) (f , f∙) = (ifₘ b then t else f)
-    , contrav-transport (GluTy.cA A)
-        (
-            ifₘ b then t else f
-          ≤⟨ hom-map (λ b → ifₘ b then t else f) h ⟩
-            ifₘ trueₘ then t else f
-          ≤⟨ βif-trueₘ t f ⟩
-            t
-          ∎≤) t∙
-  IF₀ A (b , false₂ , h) (t , t∙) (f , f∙) = (ifₘ b then t else f)
-    , contrav-transport (GluTy.cA A)
-        (
-            ifₘ b then t else f
-          ≤⟨ hom-map (λ b → ifₘ b then t else f) h ⟩
-            ifₘ falseₘ then t else f
-          ≤⟨ βif-falseₘ t f ⟩
-            f
-          ∎≤) f∙
+  IF₀ A (b , b∙) (t , t∙) (f , f∙) .fst = ifₘ b then t else f
+  IF₀ A (b , true₂ , h) (t , t∙) (f , f∙) .snd = contrav-transport (GluTy.cA A)
+    (
+        ifₘ b then t else f
+      ≤⟨ hom-map (λ b → ifₘ b then t else f) h ⟩
+        ifₘ trueₘ then t else f
+      ≤⟨ βif-trueₘ t f ⟩
+        t
+      ∎≤) t∙
+  IF₀ A (b , false₂ , h) (t , t∙) (f , f∙) .snd = contrav-transport (GluTy.cA A)
+    (
+        ifₘ b then t else f
+      ≤⟨ hom-map (λ b → ifₘ b then t else f) h ⟩
+        ifₘ falseₘ then t else f
+      ≤⟨ βif-falseₘ t f ⟩
+        f
+      ∎≤) f∙
+
+  IF : {Γ : GluCtx} {A : GluTy}
+    → GluTm Γ BOOL → GluTm Γ A → GluTm Γ A → GluTm Γ A
+  GluTm.M° (IF B T F) = ifₘ GluTm.M° B then GluTm.M° T else GluTm.M° F
+  GluTm.M∙ (IF {A = A} B T F) γ γ∙ =
+    subst (GluTy.A∙ A) (sym (if[]ₘ (GluTm.M° B) (GluTm.M° T) (GluTm.M° F) γ))
+      (snd (IF₀ A (B [ γ , γ∙ ]Tm₀) (T [ γ , γ∙ ]Tm₀) (F [ γ , γ∙ ]Tm₀)))
 
   IF[]₀ : {Γ : GluCtx} {A : GluTy}
     (B : GluTm Γ BOOL) (T F : GluTm Γ A) (γ : GluSub₀ Γ)
     → (IF B T F) [ γ ]Tm₀
       ≡ IF₀ A (B [ γ ]Tm₀) (T [ γ ]Tm₀) (F [ γ ]Tm₀)
-  IF[]₀ {A = A} B T F (γ , γ∙) with GluTm.M∙ B γ γ∙
-  ... | true₂ , h = ΣPathP (base ,
-    contravariant-transport-cong (GluTy.cA A) (tm-thinₘ εₘ (GluTy.A° A))
-      base refl (βIF-TRUE[] B T F γ h)
-      (
-          ifₘ GluTm.M° B [ γ ]Tmₘ then t else f
-        ≤⟨ hom-map (λ b → ifₘ b then t else f) h ⟩
-          ifₘ trueₘ then t else f
-        ≤⟨ βif-trueₘ t f ⟩
-          t
-        ∎≤) refl)
-    where
-    t f : Tmₘ εₘ (GluTy.A° A)
-    t = GluTm.M° T [ γ ]Tmₘ
-    f = GluTm.M° F [ γ ]Tmₘ
-    base : (ifₘ GluTm.M° B then GluTm.M° T else GluTm.M° F) [ γ ]Tmₘ
-      ≡ (ifₘ GluTm.M° B [ γ ]Tmₘ then t else f)
-    base = if[]ₘ (GluTm.M° B) (GluTm.M° T) (GluTm.M° F) γ
-  ... | false₂ , h = ΣPathP (base ,
-    contravariant-transport-cong (GluTy.cA A) (tm-thinₘ εₘ (GluTy.A° A))
-      base refl (βIF-FALSE[] B T F γ h)
-      (
-          ifₘ GluTm.M° B [ γ ]Tmₘ then t else f
-        ≤⟨ hom-map (λ b → ifₘ b then t else f) h ⟩
-          ifₘ falseₘ then t else f
-        ≤⟨ βif-falseₘ t f ⟩
-          f
-        ∎≤) refl)
-    where
-    t f : Tmₘ εₘ (GluTy.A° A)
-    t = GluTm.M° T [ γ ]Tmₘ
-    f = GluTm.M° F [ γ ]Tmₘ
-    base : (ifₘ GluTm.M° B then GluTm.M° T else GluTm.M° F) [ γ ]Tmₘ
-      ≡ (ifₘ GluTm.M° B [ γ ]Tmₘ then t else f)
-    base = if[]ₘ (GluTm.M° B) (GluTm.M° T) (GluTm.M° F) γ
+  IF[]₀ {A = A} B T F (γ , γ∙) = sym
+    (ΣPathP-subst (GluTy.A∙ A) (sym (if[]ₘ (GluTm.M° B) (GluTm.M° T) (GluTm.M° F) γ))
+      (snd (IF₀ A (B [ γ , γ∙ ]Tm₀) (T [ γ , γ∙ ]Tm₀) (F [ γ , γ∙ ]Tm₀))))
 
   IF[] : {Γ Δ : GluCtx} {A : GluTy}
     (B : GluTm Δ BOOL) (T F : GluTm Δ A) (σ : GluSub Γ Δ)
@@ -267,20 +180,14 @@ module _ {ℓS ℓM : Level} (𝓜 : SimpleDirectedCwF ℓS ℓM) where
 
   IF-preserves-β-true : {Γ : GluCtx} {A : GluTy}
     (T F : GluTm Γ A) → IF TRUE T F ≤ T
-  IF-preserves-β-true {A = A} T F = ≤ᵍ→≤ record
-    { r° = βif-trueₘ (GluTm.M° T) (GluTm.M° F)
-    ; r∙ = λ γ γ∙ → contravariant-universal-from (GluTy.cA A)
-        (contravariant-transport-cong (GluTy.cA A) (tm-thinₘ εₘ (GluTy.A° A))
-          refl refl (βIF-TRUE[] TRUE T F γ (path→hom (true[]ₘ γ)))
-          (hom-map (_[ γ ]Tmₘ) (βif-trueₘ (GluTm.M° T) (GluTm.M° F))) refl)
-    }
+  IF-preserves-β-true {A = A} T F =
+    GluTm-hom (βif-trueₘ (GluTm.M° T) (GluTm.M° F)) λ γ →
+      subst (λ t → t ≤ T [ γ ]Tm₀) (sym (IF[]₀ TRUE T F γ))
+        (Σ≤ _ (contravariant-lift-hom (GluTy.cA A) _ _))
 
   IF-preserves-β-false : {Γ : GluCtx} {A : GluTy}
     (T F : GluTm Γ A) → IF FALSE T F ≤ F
-  IF-preserves-β-false {A = A} T F = ≤ᵍ→≤ record
-    { r° = βif-falseₘ (GluTm.M° T) (GluTm.M° F)
-    ; r∙ = λ γ γ∙ → contravariant-universal-from (GluTy.cA A)
-        (contravariant-transport-cong (GluTy.cA A) (tm-thinₘ εₘ (GluTy.A° A))
-          refl refl (βIF-FALSE[] FALSE T F γ (path→hom (false[]ₘ γ)))
-          (hom-map (_[ γ ]Tmₘ) (βif-falseₘ (GluTm.M° T) (GluTm.M° F))) refl)
-    }
+  IF-preserves-β-false {A = A} T F =
+    GluTm-hom (βif-falseₘ (GluTm.M° T) (GluTm.M° F)) λ γ →
+      subst (λ t → t ≤ F [ γ ]Tm₀) (sym (IF[]₀ FALSE T F γ))
+        (Σ≤ _ (contravariant-lift-hom (GluTy.cA A) _ _))

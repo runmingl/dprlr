@@ -1,7 +1,7 @@
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Equiv
 open import Cubical.Foundations.Isomorphism
-open import Cubical.Data.Sigma using () renaming (fst to fstΣ ; snd to sndΣ)
+open import Cubical.Data.Sigma renaming (fst to fstΣ ; snd to sndΣ)
 
 open import DPRLR.Simplicial.Hom
 open import DPRLR.Simplicial.Contravariant
@@ -34,14 +34,14 @@ module DPRLR.Gluing.LogicalRelations.Judgment
       Γ∙ : Subₘ εₘ Γ° → Type ℓM
       cΓ : isContravariant Γ∙
 
-  open GluCtx public
+  open GluCtx
 
   record GluSub (Γ Δ : GluCtx) : Type ℓM where
     field
       σ° : Subₘ (Γ° Γ) (Γ° Δ)
       σ∙ : (γ° : Subₘ εₘ (Γ° Γ)) → Γ∙ Γ γ° → Γ∙ Δ (σ° ∘ₘ γ°)
 
-  open GluSub public
+  open GluSub
 
   record GluTy : Type (ℓ-max ℓS (ℓ-suc ℓM)) where
     field
@@ -49,7 +49,7 @@ module DPRLR.Gluing.LogicalRelations.Judgment
       A∙ : Tmₘ εₘ A° → Type ℓM
       cA : isContravariant A∙
 
-  open GluTy public
+  open GluTy
 
   record GluTm (Γ : GluCtx) (A : GluTy) : Type ℓM where
     field
@@ -57,7 +57,7 @@ module DPRLR.Gluing.LogicalRelations.Judgment
       M∙ : (γ° : Subₘ εₘ (Γ° Γ)) (γ∙ : Γ∙ Γ γ°)
         → A∙ A (M° [ γ° ]Tmₘ)
 
-  open GluTm public
+  open GluTm
 
   GluSub₀ : GluCtx → Type ℓM
   GluSub₀ Γ = Σ (Subₘ εₘ (Γ° Γ)) (Γ∙ Γ)
@@ -93,8 +93,6 @@ module DPRLR.Gluing.LogicalRelations.Judgment
         → A∙ A ⊢ M∙ M γ° γ∙
           ≤[ hom-map (λ t → t [ γ° ]Tmₘ) r° ]
           M∙ N γ° γ∙
-
-  open _≤ᵍ_ public
 
   ≤ᵍ→≤ :
     {Γ : GluCtx} {A : GluTy} {M N : GluTm Γ A}

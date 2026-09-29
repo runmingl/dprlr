@@ -2,6 +2,8 @@ module DPRLR.Simplicial.PreorderLocalization where
 
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Equiv
+open import Cubical.Foundations.Equiv.Properties
+  using (isEquiv[equivFunA≃B∘f]→isEquiv[f] ; isEquiv[f∘equivFunA≃B]→isEquiv[f])
 open import Cubical.Foundations.Equiv.Fiberwise
 open import Cubical.Foundations.Equiv.PathSplit
 open import Cubical.Foundations.Function
@@ -19,7 +21,7 @@ open import Cubical.HITs.S1 hiding (rec ; elim)
 open import DPRLR.Simplicial.Hom
 open import DPRLR.Simplicial.Interval
 open import DPRLR.Simplicial.Segal
-open import DPRLR.Simplicial.Shapes using (Λ²₁ ; Δ² ; spine₂)
+open import DPRLR.Simplicial.Shapes using (Λ² ; Δ² ; ι-horn)
 
 private
   variable
@@ -84,103 +86,65 @@ isBoundarySeparated≡isThin {X = X} =
   P (x , x') = Unit → x ≤ x'
   Q (x , x') = Bool → x ≤ x'
 
-  φ : (xx' : X × X) → P xx' → Q xx'
-  φ _ q _ = q tt
+  duplicate : (xx' : X × X) → P xx' → Q xx'
+  duplicate _ q _ = q tt
 
   isBoundarySeparated→isThin : isBoundarySeparated X → isThin X
   isBoundarySeparated→isThin isBoundarySeparatedX x x' p p' =
-    sym (funExt⁻ secφ false) ∙ funExt⁻ secφ true
+    sym (funExt⁻ sec-duplicate false) ∙ funExt⁻ sec-duplicate true
     where
-    totalφ-isEquiv : isEquiv (λ ((xx' , q) : Σ (X × X) P) → xx' , φ xx' q)
-    totalφ-isEquiv = equivIsEquiv $
+    total-duplicate-isEquiv : isEquiv (λ ((xx' , q) : Σ (X × X) P) → xx' , duplicate xx' q)
+    total-duplicate-isEquiv = equivIsEquiv $
       𝕊-cocone X Unit ≃⟨ invEquiv (𝕊-elim≃ Unit) ⟩
       (𝕊 Unit → X)    ≃⟨ _ , toIsEquiv _ (isBoundarySeparatedX tt) ⟩
       (𝕊 Bool → X)    ≃⟨ 𝕊-elim≃ Bool ⟩
       𝕊-cocone X Bool ■
 
-    φ≃ : P (x , x') ≃ Q (x , x')
-    φ≃ = φ (x , x') , fiberEquiv P Q φ totalφ-isEquiv (x , x')
+    duplicate≃ : P (x , x') ≃ Q (x , x')
+    duplicate≃ = duplicate (x , x') , fiberEquiv P Q duplicate total-duplicate-isEquiv (x , x')
 
-    secφ : φ (x , x') (invEq φ≃ (if_then p' else p)) ≡ (if_then p' else p)
-    secφ = secEq φ≃ (if_then p' else p)
+    sec-duplicate : duplicate (x , x') (invEq duplicate≃ (if_then p' else p)) ≡ (if_then p' else p)
+    sec-duplicate = secEq duplicate≃ (if_then p' else p)
 
   isThin→isBoundarySeparated : isThin X → isBoundarySeparated X
-  isThin→isBoundarySeparated isThinX _ =
-    fromIsEquiv _ (subst isEquiv boundary-separationFun (equivIsEquiv boundary-separation))
+  isThin→isBoundarySeparated thin _ = fromIsEquiv _
+    (isEquiv[equivFunA≃B∘f]→isEquiv[f] _ (𝕊-elim≃ Bool)
+      (compEquiv (𝕊-elim≃ Unit) (_ , totalEquiv P Q duplicate duplicate-isEquiv) .snd))
     where
-    φ-equiv : (xx' : X × X) → isEquiv (φ xx')
-    φ-equiv (x , x') = isoToIsEquiv
+    duplicate-isEquiv : (xx' : X × X) → isEquiv (duplicate xx')
+    duplicate-isEquiv (x , x') = isoToIsEquiv
       (isProp→Iso
-        (isPropΠ λ _ → isThinX x x')
-        (isPropΠ λ _ → isThinX x x')
-        (φ (x , x'))
+        (isPropΠ λ _ → thin x x')
+        (isPropΠ λ _ → thin x x')
+        (duplicate (x , x'))
         (λ q _ → q false))
-
-    boundary-separation : (𝕊 Unit → X) ≃ (𝕊 Bool → X)
-    boundary-separation =
-      (𝕊 Unit → X)    ≃⟨ 𝕊-elim≃ Unit ⟩
-      𝕊-cocone X Unit ≃⟨ _ , totalEquiv P Q φ φ-equiv ⟩
-      𝕊-cocone X Bool ≃⟨ invEquiv (𝕊-elim≃ Bool) ⟩
-      (𝕊 Bool → X)    ■
-
-    boundary-separationFun :
-      equivFun boundary-separation ≡ (_∘ 𝕊map (λ (_ : Bool) → tt))
-    boundary-separationFun = funExt λ _ → funExt λ
-      { (inl (b , i)) → refl
-      ; (inr false) → refl
-      ; (inr true) → refl
-      ; (push (b , false) i) → refl
-      ; (push (b , true) i) → refl
-      }
 
 isS¹Null≡isSet : {X : Type ℓ} → isNull (const {B = Unit} S¹) X ≡ isSet X
 isS¹Null≡isSet {X = X} =
   hPropExt isPropIsNull isPropIsSet isNull→isSet isSet→isNull
   where
   isNull→isSet : isNull (const {B = Unit} S¹) X → isSet X
-  isNull→isSet nullX =
-    isOfHLevelΩ→isOfHLevel 0 λ x → isContr→isProp (isContrLoop x)
+  isNull→isSet nullX = isOfHLevelΩ→isOfHLevel 0 λ x →
+    isOfHLevelRespectEquiv 1
+      (invEquiv (fiberProjEquiv X (λ y → y ≡ y) x))
+      (isContr→isProp (fst-isEquiv .equiv-proof x))
     where
-    const-isEquiv : isEquiv (const {A = X} {B = S¹})
-    const-isEquiv = toIsEquiv _ (nullX tt)
-
-    X≃ΣLoop : X ≃ (Σ[ x ∈ X ] (x ≡ x))
-    X≃ΣLoop =
-      compEquiv (const {A = X} {B = S¹} , const-isEquiv)
-        (isoToEquiv IsoFunSpaceS¹)
+    constant-loops : X ≃ (Σ[ x ∈ X ] (x ≡ x))
+    constant-loops = compEquiv (_ , toIsEquiv _ (nullX tt)) (isoToEquiv IsoFunSpaceS¹)
 
     fst-isEquiv : isEquiv (fst {A = X} {B = λ x → x ≡ x})
-    fst-isEquiv =
-      precomposesToId→Equiv fst (equivFun X≃ΣLoop) refl (snd X≃ΣLoop)
-
-    isContrLoop : (x : X) → isContr (x ≡ x)
-    isContrLoop x =
-      isOfHLevelRespectEquiv 0
-        (invEquiv (fiberProjEquiv X (λ y → y ≡ y) x))
-        (fst-isEquiv .equiv-proof x)
+    fst-isEquiv = precomposesToId→Equiv fst (equivFun constant-loops) refl (constant-loops .snd)
 
   isSet→isNull : isSet X → isNull (const {B = Unit} S¹) X
-  isSet→isNull setX _ = fromIsEquiv _ const-isEquiv
-    where
-    loopContr : (y : X) → isContr (y ≡ y)
-    loopContr y = refl , λ p → setX y y refl p
-
-    e : X ≃ (S¹ → X)
-    e =
-      compEquiv (invEquiv (Σ-contractSnd loopContr))
-        (invEquiv (isoToEquiv IsoFunSpaceS¹))
-
-    e≡ : equivFun e ≡ const {A = X} {B = S¹}
-    e≡ = funExt λ x → funExt λ { base → refl ; (loop i) → refl }
-
-    const-isEquiv : isEquiv (const {A = X} {B = S¹})
-    const-isEquiv = subst isEquiv e≡ (e .snd)
+  isSet→isNull setX _ = fromIsEquiv _
+    (isEquiv[equivFunA≃B∘f]→isEquiv[f] _ (isoToEquiv IsoFunSpaceS¹)
+      (invEquiv (Σ-contractSnd λ x → refl , setX x x refl) .snd))
 
 data Requirements : Type₀ where
   segal thin hset : Requirements
 
 Sᴾ : Requirements → Type₀
-Sᴾ segal = Λ²₁
+Sᴾ segal = Λ²
 Sᴾ thin = 𝕊 Bool
 Sᴾ hset = S¹
 
@@ -190,7 +154,7 @@ Tᴾ thin = 𝕊 Unit
 Tᴾ hset = Unit
 
 Fᴾ : (α : Requirements) → Sᴾ α → Tᴾ α
-Fᴾ segal = spine₂
+Fᴾ segal = ι-horn
 Fᴾ thin = 𝕊map (λ (_ : Bool) → tt)
 Fᴾ hset = λ _ → tt
 
@@ -213,7 +177,7 @@ isPropIsPreorder =
 rec : isPreorder Y → (X → Y) → ∥ X ∥ᴾ → Y
 rec = Localization.rec
 
-open isPathSplitEquiv public
+open isPathSplitEquiv
 
 isProp→isLocal :
   {X : Type ℓ}
@@ -382,11 +346,9 @@ rec-uniqueP₂ {Z = Z} localZ f g p x y = toPathP
     (λ x y → fromPathP (p x y)) x y)
 
 isPreorder≃ : {X : Type ℓ} {Y : Type ℓ'} → X ≃ Y → isPreorder X → isPreorder Y
-isPreorder≃ e localX α =
-  fromIsEquiv _ (subst isEquiv (funExt λ f → funExt λ s → secEq e (f (Fᴾ α s))) (equivIsEquiv
-    (compEquiv (equivΠCod λ _ → invEquiv e)
-      (compEquiv (_ , toIsEquiv _ (localX α))
-        (equivΠCod λ _ → e)))))
+isPreorder≃ e localX α = fromIsEquiv _
+  (isEquiv[f∘equivFunA≃B]→isEquiv[f] _ (equivΠCod λ _ → e)
+    (compEquiv (_ , toIsEquiv _ (localX α)) (equivΠCod λ _ → e) .snd))
 
 isPreorder× : {X : Type ℓ} {Y : Type ℓ'}
   → isPreorder X → isPreorder Y → isPreorder (X × Y)

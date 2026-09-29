@@ -3,7 +3,7 @@ module DPRLR.Object.Model.Model where
 open import Cubical.Foundations.Prelude hiding (Sub ; _▷_ ; lift)
 open import Cubical.Foundations.Equiv using (_≃_)
 open import Cubical.Foundations.Isomorphism using (iso ; isoToEquiv)
-open import Cubical.Data.Sigma using (_×_ ; _,_)
+open import Cubical.Data.Sigma using (_×_)
 
 open import DPRLR.Simplicial.Hom
 open import DPRLR.Simplicial.Segal
@@ -248,5 +248,3 @@ record SimpleDirectedCwF (ℓS ℓM : Level) : Type (ℓ-suc (ℓ-max ℓS ℓM)
 
   _∎≤ : {Γ : Ctx} {A : Ty} (t : Tm Γ A) → t ≤ t
   t ∎≤ = hom-refl t
-
-open SimpleDirectedCwF public

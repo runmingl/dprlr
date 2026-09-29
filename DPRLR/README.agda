@@ -138,8 +138,8 @@ import DPRLR.Simplicial.Segal using
 -}
 import DPRLR.Simplicial.Shapes using
   ( Δ²
-  ; Λ²₁
-  ; spine₂
+  ; Λ²
+  ; ι-horn
   )
 import DPRLR.Simplicial.PreorderLocalization using
   ( Fᴾ
