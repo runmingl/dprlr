@@ -1,0 +1,104 @@
+name: Agda and HTML
+
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  typecheck:
+    name: Typecheck with Agda 2.8.0 + Cubical 0.9
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      COMPILER_REF: d351d0653aeb7877273920cd3e823994e7579b0b
+      CUBICAL_REF: b150186d2544e7efeddd31e5d14a8b9ecbb100f7
+
+    steps:
+      - name: Check out DPRLR
+        uses: actions/checkout@v4
+        with:
+          path: dprlr
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@v31
+        with:
+          extra_nix_config: |
+            accept-flake-config = true
+            cores = 4
+            max-jobs = 1
+
+      - name: Install Agda from Nixpkgs
+        run: |
+          nix profile add \
+            "github:NixOS/nixpkgs/${COMPILER_REF}#agda"
+          echo "$HOME/.nix-profile/bin" >> "$GITHUB_PATH"
+
+      - name: Check out the matching Cubical library
+        shell: bash
+        run: |
+          git init cubical
+          git -C cubical remote add origin https://github.com/agda/cubical.git
+          git -C cubical fetch --depth=1 origin "$CUBICAL_REF"
+          git -C cubical checkout --detach FETCH_HEAD
+
+      - name: Register the Cubical library
+        shell: bash
+        run: |
+          printf '%s\n' "$GITHUB_WORKSPACE/cubical/cubical.agda-lib" > "$GITHUB_WORKSPACE/libraries"
+
+      - name: Restore Cubical interface cache
+        uses: actions/cache@v4
+        with:
+          path: cubical/_build
+          key: cubical-interfaces-${{ runner.os }}-${{ runner.arch }}-agda-${{ env.COMPILER_REF }}-${{ env.CUBICAL_REF }}
+
+      - name: Show compiler version
+        run: agda --version
+
+      - name: Typecheck DPRLR
+        working-directory: dprlr
+        run: agda --cubical --guardedness --library-file="$GITHUB_WORKSPACE/libraries" --build-library
+
+      - name: Generate HTML
+        working-directory: dprlr
+        run: |
+          agda --cubical --guardedness --library-file="$GITHUB_WORKSPACE/libraries" \
+            --html --highlight-occurrences --html-dir=html DPRLR/Everything.agda
+          agda --cubical --guardedness --library-file="$GITHUB_WORKSPACE/libraries" \
+            --html --highlight-occurrences --html-dir=html DPRLR/README.agda
+
+      - name: Upload HTML artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dprlr-html
+          path: dprlr/html/
+          if-no-files-found: error
+
+  deploy:
+    name: Publish HTML to personal webpage
+    needs: typecheck
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    concurrency:
+      group: dprlr-webpage
+      cancel-in-progress: false
+    steps:
+      - name: Download HTML artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: dprlr-html
+          path: html
+
+      - name: Publish HTML via SCP
+        uses: appleboy/scp-action@v1
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+          source: "html/*"
+          target: ${{ secrets.AFS_PATH }}
+          strip_components: 1
