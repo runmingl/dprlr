@@ -263,11 +263,10 @@ import DPRLR.Simplicial.Contravariant using
 {-
     Lemma 3.3 and Lemma 3.4.
     Contravariant transport is functorial and satisfies its universal property.
-    The second half of Lemma 3.3 requires more simplicial primitives, which we 
-    don't develop in this formalization.
 -}
 import DPRLR.Simplicial.Contravariant using
   ( contravariant-transport-refl
+  ; contravariant-transport-compose
   ; contravariant-universal≃
   )
 

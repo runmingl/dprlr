@@ -13,7 +13,8 @@ open import DPRLR.Simplicial.Hom
 open import DPRLR.Simplicial.Discrete
 open import DPRLR.Simplicial.Function
 open import DPRLR.Simplicial.Product
-open import DPRLR.Simplicial.Segal using (isSegal ; Composite)
+open import DPRLR.Simplicial.Segal
+  using (isSegal ; Composite ; segal-compose ; segal-compose-witness)
 open import DPRLR.Simplicial.PreorderLocalization
   using (isPreorder ; isPreorder→isSet ; isPreorder→isThin ; isPreorder→isSegal
         ; isSetThinSegal→isPreorder)
@@ -93,6 +94,19 @@ contravariant-transport-refl c {x = x} v =
     (contravariant-universal-to c
       {f = hom-refl x}
       (hom-refl v))
+
+-- RS17, Proposition 8.16.
+contravariant-transport-compose :
+  {C : A → Type ℓ'} (c : isContravariant C) (S : isSegal A)
+  → {x y z : A} (f : x ≤ y) (g : y ≤ z) (v : C z)
+  → contrav-transport c (segal-compose S f g) v
+    ≡ contrav-transport c f (contrav-transport c g v)
+contravariant-transport-compose c S f g v =
+  let q = segal-compose-witness S f g in
+  contravariant-universal-to c
+    ((λ i → contrav-transport c (q .fst i) v)
+    , (λ i → contrav-transport c (q .snd .fst i) v)
+    , (λ i → contrav-transport c (q .snd .snd i) v))
 
 contravariant-transport-cong :
   {C : A → Type ℓ'} (c : isContravariant C) → isThin A
