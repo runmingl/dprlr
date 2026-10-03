@@ -15,6 +15,9 @@ module DPRLR.README where
 {-
     Section 2 and Definition 2.1.
     The directed interval has endpoints 𝟎 and 𝟏 and induces inequality types.
+    Interval.agda postulates a set with a propositional bounded total order;
+    totality is propositionally truncated. Meet and join are derived from
+    these order laws.
 -}
 import DPRLR.Simplicial.Interval using
   ( 𝟚
@@ -125,22 +128,33 @@ import DPRLR.Simplicial.Hom using
 
 {-
     Section 2.2.3.
-    Segal types have contractible spaces of composites, hence composable inequalities.
+    We use cone composites: an arrow h : x ≤ z together with a dependent
+    arrow from h to g over f in the family (λ w → w ≤ z).
+    Their contractibility makes representables contravariant directly and
+    keeps the transport and total-space proofs in the same formulation.
 -}
 import DPRLR.Simplicial.Segal using
   ( isSegal
+  ; Composite
   ; segal-compose
+  ; segal-compose-witness
+  )
+
+import DPRLR.Simplicial.Shapes using
+  ( Λ²
+  ; Δ²
+  ; ι-horn
+  )
+
+import DPRLR.Simplicial.PathTransitive using
+  ( isPathTransitive
+  ; isSegal≡isPathTransitive
   )
 
 {-
     Section 2.2.2, Section 2.2.3, and Appendix A.
     The localization reflector produces types that are set, thin, and Segal.
 -}
-import DPRLR.Simplicial.Shapes using
-  ( Δ²
-  ; Λ²
-  ; ι-horn
-  )
 import DPRLR.Simplicial.PreorderLocalization using
   ( Fᴾ
   ; ∥_∥ᴾ

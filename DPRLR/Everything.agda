@@ -7,6 +7,7 @@ import DPRLR.Simplicial.Shapes
 import DPRLR.Simplicial.Hom
 import DPRLR.Simplicial.Discrete
 import DPRLR.Simplicial.Segal
+import DPRLR.Simplicial.PathTransitive
 import DPRLR.Simplicial.PreorderLocalization
 import DPRLR.Simplicial.Contravariant
 import DPRLR.Simplicial.BinaryContravariant

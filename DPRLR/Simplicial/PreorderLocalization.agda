@@ -4,7 +4,7 @@ open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Equiv
 open import Cubical.Foundations.Equiv.Properties
   using (isEquiv[equivFunA≃B∘f]→isEquiv[f] ; isEquiv[f∘equivFunA≃B]→isEquiv[f])
-open import Cubical.Foundations.Equiv.Fiberwise
+open import Cubical.Foundations.Equiv.Fiberwise using (fiberEquiv)
 open import Cubical.Foundations.Equiv.PathSplit
 open import Cubical.Foundations.Function
 open import Cubical.Foundations.HLevels
@@ -14,13 +14,13 @@ open import Cubical.Data.Bool hiding (elim ; _≤_)
 open import Cubical.Data.Sigma
 open import Cubical.Data.Unit
 open import Cubical.HITs.Localization as Localization hiding (rec)
-open import Cubical.HITs.Nullification hiding (rec ; elim)
 open import Cubical.HITs.Pushout.Base
 open import Cubical.HITs.S1 hiding (rec ; elim)
 
 open import DPRLR.Simplicial.Hom
 open import DPRLR.Simplicial.Interval
 open import DPRLR.Simplicial.Segal
+open import DPRLR.Simplicial.PathTransitive using (isSegal≡isPathTransitive)
 open import DPRLR.Simplicial.Shapes using (Λ² ; Δ² ; ι-horn)
 
 private
@@ -41,27 +41,27 @@ private
 
 𝕊-cocone : Type ℓ → Type ℓ' → Type (ℓ-max ℓ ℓ')
 𝕊-cocone X Y =
-  Σ (X × X) (λ (x , x') → Y → x ≤ x')
+  Σ[ x ∈ X ] Σ[ x' ∈ X ] (Y → x ≤ x')
 
 𝕊-elim≃ : {X : Type ℓ} → (Y : Type ℓ') → (𝕊 Y → X) ≃ 𝕊-cocone X Y
 𝕊-elim≃ {X = X} Y = isoToEquiv 𝕊-elim
   where
   𝕊-elim : Iso (𝕊 Y → X) (𝕊-cocone X Y)
   Iso.fun 𝕊-elim k =
-    (k (inr false) , k (inr true))
+    k (inr false) , k (inr true)
     , λ y →
         (λ i → k (inl (y , i)))
         , cong k (push (y , false))
         , cong k (push (y , true))
-  Iso.inv 𝕊-elim (_ , q) (inl (y , i)) =
+  Iso.inv 𝕊-elim (_ , _ , q) (inl (y , i)) =
     hom-path (q y) i
-  Iso.inv 𝕊-elim ((x , x') , q) (inr false) = x
-  Iso.inv 𝕊-elim ((x , x') , q) (inr true) = x'
-  Iso.inv 𝕊-elim (_ , q) (push (y , false) i) =
+  Iso.inv 𝕊-elim (x , x' , q) (inr false) = x
+  Iso.inv 𝕊-elim (x , x' , q) (inr true) = x'
+  Iso.inv 𝕊-elim (_ , _ , q) (push (y , false) i) =
     left-endpoint (q y) i
-  Iso.inv 𝕊-elim (_ , q) (push (y , true) i) =
+  Iso.inv 𝕊-elim (_ , _ , q) (push (y , true) i) =
     right-endpoint (q y) i
-  Iso.rightInv 𝕊-elim (_ , q) = refl
+  Iso.rightInv 𝕊-elim (_ , _ , q) = refl
   Iso.leftInv 𝕊-elim k i (inl (y , j)) = k (inl (y , j))
   Iso.leftInv 𝕊-elim k i (inr false) = k (inr false)
   Iso.leftInv 𝕊-elim k i (inr true) = k (inr true)
@@ -82,63 +82,85 @@ isBoundarySeparated≡isThin {X = X} =
     isBoundarySeparated→isThin
     isThin→isBoundarySeparated
   where
-  P Q : X × X → Type _
-  P (x , x') = Unit → x ≤ x'
-  Q (x , x') = Bool → x ≤ x'
-
-  duplicate : (xx' : X × X) → P xx' → Q xx'
-  duplicate _ q _ = q tt
-
   isBoundarySeparated→isThin : isBoundarySeparated X → isThin X
-  isBoundarySeparated→isThin isBoundarySeparatedX x x' p p' =
-    sym (funExt⁻ sec-duplicate false) ∙ funExt⁻ sec-duplicate true
+  isBoundarySeparated→isThin separated x y p q =
+    p           ≡⟨ sym (common-path≡pair false) ⟩
+    common-path ≡⟨ common-path≡pair true ⟩
+    q ∎
     where
-    total-duplicate-isEquiv : isEquiv (λ ((xx' , q) : Σ (X × X) P) → xx' , duplicate xx' q)
-    total-duplicate-isEquiv = equivIsEquiv $
-      𝕊-cocone X Unit ≃⟨ invEquiv (𝕊-elim≃ Unit) ⟩
-      (𝕊 Unit → X)    ≃⟨ _ , toIsEquiv _ (isBoundarySeparatedX tt) ⟩
-      (𝕊 Bool → X)    ≃⟨ 𝕊-elim≃ Bool ⟩
+    cocones≃ : 𝕊-cocone X Unit ≃ 𝕊-cocone X Bool
+    cocones≃ =
+      𝕊-cocone X Unit
+        ≃⟨ invEquiv (𝕊-elim≃ Unit) ⟩
+      (𝕊 Unit → X)
+        ≃⟨ _ , toIsEquiv _ (separated tt) ⟩
+      (𝕊 Bool → X)
+        ≃⟨ 𝕊-elim≃ Bool ⟩
       𝕊-cocone X Bool ■
 
-    duplicate≃ : P (x , x') ≃ Q (x , x')
-    duplicate≃ = duplicate (x , x') , fiberEquiv P Q duplicate total-duplicate-isEquiv (x , x')
+    paths≃ : (Unit → x ≤ y) ≃ (Bool → x ≤ y)
+    paths≃ = _ , fiberEquiv _ _ _
+      (fiberEquiv _ _ _ (equivIsEquiv cocones≃) x) y
 
-    sec-duplicate : duplicate (x , x') (invEq duplicate≃ (if_then p' else p)) ≡ (if_then p' else p)
-    sec-duplicate = secEq duplicate≃ (if_then p' else p)
+    pair : Bool → x ≤ y
+    pair false = p
+    pair true = q
+
+    common-path : x ≤ y
+    common-path = invEq paths≃ pair tt
+
+    common-path≡pair : (b : Bool) → common-path ≡ pair b
+    common-path≡pair = funExt⁻ (secEq paths≃ pair)
 
   isThin→isBoundarySeparated : isThin X → isBoundarySeparated X
-  isThin→isBoundarySeparated thin _ = fromIsEquiv _
-    (isEquiv[equivFunA≃B∘f]→isEquiv[f] _ (𝕊-elim≃ Bool)
-      (compEquiv (𝕊-elim≃ Unit) (_ , totalEquiv P Q duplicate duplicate-isEquiv) .snd))
-    where
-    duplicate-isEquiv : (xx' : X × X) → isEquiv (duplicate xx')
-    duplicate-isEquiv (x , x') = isoToIsEquiv
-      (isProp→Iso
-        (isPropΠ λ _ → thin x x')
-        (isPropΠ λ _ → thin x x')
-        (duplicate (x , x'))
-        (λ q _ → q false))
+  isThin→isBoundarySeparated thin _ = fromIsEquiv _ $
+    isEquiv[equivFunA≃B∘f]→isEquiv[f] _ (𝕊-elim≃ Bool) $ equivIsEquiv $
+      (𝕊 Unit → X)
+    ≃⟨ 𝕊-elim≃ Unit ⟩
+      𝕊-cocone X Unit
+    ≃⟨ Σ-cong-equiv-snd (λ x → Σ-cong-equiv-snd (λ y →
+        propBiimpl→Equiv (isPropΠ λ _ → thin x y) (isPropΠ λ _ → thin x y)
+          (λ f _ → f tt) (λ f _ → f true))) ⟩
+      𝕊-cocone X Bool 
+    ■
 
-isS¹Null≡isSet : {X : Type ℓ} → isNull (const {B = Unit} S¹) X ≡ isSet X
-isS¹Null≡isSet {X = X} =
-  hPropExt isPropIsNull isPropIsSet isNull→isSet isSet→isNull
+isS¹Local≡isSet :
+  {X : Type ℓ} → isLocal {A = Unit} (const (terminal S¹)) X ≡ isSet X
+isS¹Local≡isSet {X = X} =
+  hPropExt (isPropΠ λ _ → isPropIsPathSplitEquiv _) isPropIsSet
+    isLocal→isSet isSet→isLocal
   where
-  isNull→isSet : isNull (const {B = Unit} S¹) X → isSet X
-  isNull→isSet nullX = isOfHLevelΩ→isOfHLevel 0 λ x →
-    isOfHLevelRespectEquiv 1
-      (invEquiv (fiberProjEquiv X (λ y → y ≡ y) x))
-      (isContr→isProp (fst-isEquiv .equiv-proof x))
+  isLocal→isSet : isLocal {A = Unit} (const (terminal S¹)) X → isSet X
+  isLocal→isSet localX = isOfHLevelΩ→isOfHLevel 0 loops-isProp
     where
     constant-loops : X ≃ (Σ[ x ∈ X ] (x ≡ x))
-    constant-loops = compEquiv (_ , toIsEquiv _ (nullX tt)) (isoToEquiv IsoFunSpaceS¹)
+    constant-loops =
+        X
+      ≃⟨ invEquiv (UnitToType≃ X) ⟩
+        (Unit → X)
+      ≃⟨ _ , toIsEquiv _ (localX tt) ⟩
+        (S¹ → X)
+      ≃⟨ isoToEquiv IsoFunSpaceS¹ ⟩
+        Σ[ x ∈ X ] (x ≡ x) 
+      ■
 
-    fst-isEquiv : isEquiv (fst {A = X} {B = λ x → x ≡ x})
-    fst-isEquiv = precomposesToId→Equiv fst (equivFun constant-loops) refl (constant-loops .snd)
+    K : (x : X) (p : x ≡ x) → p ≡ refl
+    K x p = J (λ (y , q) _ → q ≡ refl) refl constant-loop-path
+      where
+      constant-loop-path : (invEq constant-loops (x , p) , refl) ≡ (x , p)
+      constant-loop-path = secEq constant-loops (x , p)
 
-  isSet→isNull : isSet X → isNull (const {B = Unit} S¹) X
-  isSet→isNull setX _ = fromIsEquiv _
-    (isEquiv[equivFunA≃B∘f]→isEquiv[f] _ (isoToEquiv IsoFunSpaceS¹)
-      (invEquiv (Σ-contractSnd λ x → refl , setX x x refl) .snd))
+    loops-isProp : (x : X) → isProp (x ≡ x)
+    loops-isProp x p q = K x p ∙ sym (K x q)
+
+  isSet→isLocal : isSet X → isLocal {A = Unit} (const (terminal S¹)) X
+  isSet→isLocal setX _ = fromIsEquiv (_∘ terminal S¹) (isoToIsEquiv S¹→XIso)
+    where
+    S¹→XIso : Iso (Unit → X) (S¹ → X)
+    S¹→XIso .Iso.fun f = f ∘ terminal S¹
+    S¹→XIso .Iso.inv f _ = f base
+    S¹→XIso .Iso.rightInv f = funExt (toPropElim (λ _ → setX _ _) refl)
+    S¹→XIso .Iso.leftInv f = funExt λ { tt → refl }
 
 data Requirements : Type₀ where
   segal thin hset : Requirements
@@ -204,9 +226,7 @@ isPreorder→isSet :
   → isPreorder X
   → isSet X
 isPreorder→isSet isPreorderX =
-  transport isS¹Null≡isSet λ _ →
-  fromIsEquiv _ $ equivIsEquiv $
-  compEquiv (invEquiv (UnitToType≃ _)) (_ , toIsEquiv _ (isPreorderX hset))
+  transport isS¹Local≡isSet λ _ → isPreorderX hset
 
 isProp→isPreorder :
   {X : Type ℓ}
@@ -241,18 +261,16 @@ isPreorder→isSegal :
   → isPreorder X
   → isSegal X
 isPreorder→isSegal isPreorderX =
-  invEq isSegal≃isEquiv-spine (toIsEquiv _ (isPreorderX segal))
+  transport (sym isSegal≡isPathTransitive) (λ _ → isPreorderX segal)
 
 isSetThinSegal→isPreorder :
   {X : Type ℓ} → isSet X → isThin X → isSegal X → isPreorder X
 isSetThinSegal→isPreorder setX thinX segalX segal =
-  fromIsEquiv _ (equivFun isSegal≃isEquiv-spine segalX)
+  transport isSegal≡isPathTransitive segalX tt
 isSetThinSegal→isPreorder setX thinX segalX thin = 
   transport (sym isBoundarySeparated≡isThin) thinX tt
-isSetThinSegal→isPreorder {X = X} setX thinX segalX hset =
-  fromIsEquiv _ (equivIsEquiv
-    (compEquiv (UnitToType≃ X)
-      (_ , toIsEquiv _ (transport (sym isS¹Null≡isSet) setX tt))))
+isSetThinSegal→isPreorder setX thinX segalX hset =
+  transport (sym isS¹Local≡isSet) setX tt
 
 rec-unique :
   isPreorder Y

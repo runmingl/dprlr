@@ -1,7 +1,6 @@
 module DPRLR.Simplicial.Hom where
 
 open import Cubical.Foundations.Prelude
-open import Cubical.Foundations.HLevels using (isPropΠ ; isPropΣ ; isProp× ; isOfHLevelPathP')
 open import Cubical.Data.Sigma
 
 open import DPRLR.Simplicial.Interval
@@ -63,19 +62,6 @@ _⊢_≤[_]_ :
   {A : Type ℓ} (P : A → Type ℓ') {x y : A}
   → P x → x ≤ y → P y → Type ℓ'
 P ⊢ u ≤[ h ] v = HomP P h u v
-
-HomP-isProp :
-  {A : Type ℓ} {P : A → Type ℓ'} {x y : A}
-  {h : x ≤ y} {u : P x} {v : P y}
-  → ((a : A) → isProp (P a))
-  → isProp (P ⊢ u ≤[ h ] v)
-HomP-isProp {P = P} {h = h} Pprop =
-  isPropΣ
-    (isPropΠ λ i → Pprop (hom-path h i))
-    λ q →
-      isProp×
-        (isOfHLevelPathP' 1 (isProp→isSet (Pprop _)) _ _)
-        (isOfHLevelPathP' 1 (isProp→isSet (Pprop _)) _ _)
 
 isThin : Type ℓ → Type ℓ
 isThin A = (x y : A) → isProp (x ≤ y)
