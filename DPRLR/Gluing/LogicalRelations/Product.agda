@@ -1,40 +1,23 @@
-module DPRLR.Gluing.LogicalRelations.Product where
-
 open import Cubical.Foundations.Prelude
-open import DPRLR.Cubical.Path using (ΣPathP-subst)
 open import Cubical.Data.Sigma
+open import Cubical.Foundations.HLevels using (isSet×)
 
 open import DPRLR.Simplicial.Hom
 open import DPRLR.Simplicial.Contravariant
 open import DPRLR.Simplicial.Product
-open import DPRLR.Object.Model.Model using (SimpleDirectedCwF)
+open import DPRLR.Simplicial.PreorderLocalization using (⌞_⌟)
+open import DPRLR.Object.Model.Model
+open import DPRLR.Cubical.Path using (ΣPathP-subst)
 
-module _ {ℓS ℓM : Level} (𝓜 : SimpleDirectedCwF ℓS ℓM) where
+module DPRLR.Gluing.LogicalRelations.Product
+  {ℓS ℓM : Level} (𝓜 : SimpleCwF ℓS ℓM) where
   open import DPRLR.Gluing.LogicalRelations.Judgment 𝓜
   open import DPRLR.Gluing.LogicalRelations.Substitution 𝓜
-
-  open SimpleDirectedCwF 𝓜
-    renaming
-      ( Sub to Subₘ
-      ; Tm to Tmₘ
-      ; ε to εₘ
-      ; _[_]Tm to _[_]Tmₘ
-      ; _×ᵗʸ_ to _×ₘ_
-      ; pair to pairₘ
-      ; fst to fstₘ
-      ; snd to sndₘ
-      ; pair[] to pair[]ₘ
-      ; fst[] to fst[]ₘ
-      ; snd[] to snd[]ₘ
-      ; β×₁ to β×₁ₘ
-      ; β×₂ to β×₂ₘ
-      ; η× to η×ₘ
-      ; tm-thin to tm-thinₘ
-      )
+  open import DPRLR.Gluing.Base 𝓜
 
   PROD∙ :
     (A B : GluTy)
-    → Tmₘ εₘ (GluTy.A° A ×ₘ GluTy.A° B)
+    → ⌞ Tmₘ εₘ (GluTy.A° A ×ₘ GluTy.A° B) ⌟
     → Type ℓM
   PROD∙ A B P =
     GluTy.A∙ A (fstₘ P)
@@ -54,6 +37,8 @@ module _ {ℓS ℓM : Level} (𝓜 : SimpleDirectedCwF ℓS ℓM) where
     → GluTy
   GluTy.A° (PROD A B) = GluTy.A° A ×ₘ GluTy.A° B
   GluTy.A∙ (PROD A B) = PROD∙ A B
+  GluTy.A∙-isSet (PROD A B) P =
+    isSet× (GluTy.A∙-isSet A (fstₘ P)) (GluTy.A∙-isSet B (sndₘ P))
   GluTy.cA (PROD A B) = PROD-contravariant A B
 
   β×₁[] :
@@ -61,7 +46,7 @@ module _ {ℓS ℓM : Level} (𝓜 : SimpleDirectedCwF ℓS ℓM) where
     (A B : GluTy)
     (M : GluTm Γ A)
     (N : GluTm Γ B)
-    (γ° : Subₘ εₘ (GluCtx.Γ° Γ))
+    (γ° : ⌞ Subₘ εₘ (GluCtx.Γ° Γ) ⌟)
     → fstₘ (pairₘ (GluTm.M° M) (GluTm.M° N) [ γ° ]Tmₘ)
       ≤ (GluTm.M° M [ γ° ]Tmₘ)
   β×₁[] A B M N γ° =
@@ -76,7 +61,7 @@ module _ {ℓS ℓM : Level} (𝓜 : SimpleDirectedCwF ℓS ℓM) where
     (A B : GluTy)
     (M : GluTm Γ A)
     (N : GluTm Γ B)
-    (γ° : Subₘ εₘ (GluCtx.Γ° Γ))
+    (γ° : ⌞ Subₘ εₘ (GluCtx.Γ° Γ) ⌟)
     → sndₘ (pairₘ (GluTm.M° M) (GluTm.M° N) [ γ° ]Tmₘ)
       ≤ (GluTm.M° N [ γ° ]Tmₘ)
   β×₂[] A B M N γ° =

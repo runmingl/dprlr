@@ -1,6 +1,7 @@
 module DPRLR.Simplicial.Hom where
 
 open import Cubical.Foundations.Prelude
+open import Cubical.Foundations.Function
 open import Cubical.Data.Sigma
 
 open import DPRLR.Simplicial.Interval
@@ -14,9 +15,7 @@ private
 infix 4 _≤_ _⊢_≤[_]_
 
 Hom : (A : Type ℓ) → A → A → Type ℓ
-Hom A x y =
-  Σ (𝟚 → A)
-    (λ p → (p 𝟎 ≡ x) × (p 𝟏 ≡ y))
+Hom A x y = Σ[ p ∈ (𝟚 → A) ] (p 𝟎 ≡ x) × (p 𝟏 ≡ y)
 
 _≤_ : {A : Type ℓ} → A → A → Type ℓ
 _≤_ {A = A} = Hom A
@@ -34,14 +33,14 @@ hom-refl : (x : A) → Hom A x x
 hom-refl x = (λ _ → x) , refl , refl
 
 path→hom : {x y : A} → x ≡ y → x ≤ y
-path→hom {x = x} p = subst (λ y → x ≤ y) p (hom-refl x)
+path→hom {x = x} p = subst (x ≤_) p (hom-refl x)
 
 path→hom-refl : {x : A} → path→hom (refl {x = x}) ≡ hom-refl x
-path→hom-refl {x = x} = substRefl {B = λ y → x ≤ y} (hom-refl x)
+path→hom-refl {x = x} = substRefl {B = x ≤_} (hom-refl x)
 
 hom-map : (f : A → B) → {x y : A} → Hom A x y → Hom B (f x) (f y)
 hom-map f h =
-  (λ i → f (hom-path h i))
+  f ∘ hom-path h
   , cong f (left-endpoint h)
   , cong f (right-endpoint h)
 

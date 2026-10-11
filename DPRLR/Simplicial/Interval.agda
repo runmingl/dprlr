@@ -3,8 +3,7 @@ module DPRLR.Simplicial.Interval where
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.HLevels using (isProp× ; isPropΠ3)
 open import Cubical.Data.Sigma using (_×_ ; Σ≡Prop)
-open import Cubical.Data.Sum using (_⊎_ ; inl ; inr)
-open import Cubical.HITs.PropositionalTruncation as PT using (∥_∥₁)
+open import Cubical.Functions.Logic
 
 infix 4 _≤₂_
 infixr 7 _∧₂_
@@ -19,7 +18,7 @@ postulate
   ≤₂-refl : (i : 𝟚) → i ≤₂ i
   ≤₂-trans : {i j k : 𝟚} → i ≤₂ j → j ≤₂ k → i ≤₂ k
   ≤₂-antisym : {i j : 𝟚} → i ≤₂ j → j ≤₂ i → i ≡ j
-  ≤₂-total : (i j : 𝟚) → ∥ (i ≤₂ j) ⊎ (j ≤₂ i) ∥₁
+  ≤₂-total : (i j : 𝟚) → (i ≤₂ j) ⊔′ (j ≤₂ i)
 
   𝟎 𝟏 : 𝟚
   ≤₂-bottom : (i : 𝟚) → 𝟎 ≤₂ i
@@ -37,11 +36,11 @@ private
       (≤₂-antisym (ng m ml mr) (mg n nl nr))
 
   meet : (i j : 𝟚) → Meet i j
-  meet i j = PT.rec (isPropMeet i j)
-    (λ { (inl p) → i , ≤₂-refl i , p , (λ k ki kj → ki)
-       ; (inr p) → j , p , ≤₂-refl j , (λ k ki kj → kj)
-       })
-    (≤₂-total i j)
+  meet i j =
+    ⊔-elim (_ , ≤₂-isProp i j) (_ , ≤₂-isProp j i) (λ _ → _ , isPropMeet i j)
+      (λ p → i , ≤₂-refl i , p , (λ k ki kj → ki))
+      (λ p → j , p , ≤₂-refl j , (λ k ki kj → kj))
+      (≤₂-total i j)
 
   Join : 𝟚 → 𝟚 → Type₀
   Join i j = Σ[ m ∈ 𝟚 ] ((i ≤₂ m) × (j ≤₂ m)
@@ -54,11 +53,11 @@ private
       (≤₂-antisym (mlst n nl nr) (nlst m ml mr))
 
   join : (i j : 𝟚) → Join i j
-  join i j = PT.rec (isPropJoin i j)
-    (λ { (inl p) → j , p , ≤₂-refl j , (λ k ik jk → jk)
-       ; (inr p) → i , ≤₂-refl i , p , (λ k ik jk → ik)
-       })
-    (≤₂-total i j)
+  join i j =
+    ⊔-elim (_ , ≤₂-isProp i j) (_ , ≤₂-isProp j i) (λ _ → _ , isPropJoin i j)
+      (λ p → j , p , ≤₂-refl j , (λ k ik jk → jk))
+      (λ p → i , ≤₂-refl i , p , (λ k ik jk → ik))
+      (≤₂-total i j)
 
 _∧₂_ : 𝟚 → 𝟚 → 𝟚
 i ∧₂ j = meet i j .fst

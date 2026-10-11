@@ -3,13 +3,16 @@ module DPRLR.Simplicial.PreorderLocalization where
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Equiv
 open import Cubical.Foundations.Equiv.Properties
-  using (isEquiv[equivFunA≃B∘f]→isEquiv[f] ; isEquiv[f∘equivFunA≃B]→isEquiv[f])
+  using (isEquiv[equivFunA≃B∘f]→isEquiv[f] ; isEquiv[f∘equivFunA≃B]→isEquiv[f] ; congEquiv)
 open import Cubical.Foundations.Equiv.Fiberwise using (fiberEquiv)
 open import Cubical.Foundations.Equiv.PathSplit
 open import Cubical.Foundations.Function
 open import Cubical.Foundations.HLevels
 open import Cubical.Foundations.Isomorphism
+open import Cubical.Foundations.Structure using (TypeWithStr ; str)
+open import Cubical.Foundations.Structure using () renaming (⟨_⟩ to ⌞_⌟) public
 open import Cubical.Foundations.Univalence
+open import Cubical.Functions.FunExtEquiv using (funExtEquiv)
 open import Cubical.Data.Bool hiding (elim ; _≤_)
 open import Cubical.Data.Sigma
 open import Cubical.Data.Unit
@@ -25,7 +28,7 @@ open import DPRLR.Simplicial.Shapes using (Λ² ; Δ² ; ι-horn)
 
 private
   variable
-    ℓ ℓ' ℓ'' ℓ''' : Level
+    ℓ ℓ' ℓ'' ℓ''' ℓ'''' : Level
     X Y : Type ℓ
 
 𝕊 : Type ℓ → Type ℓ
@@ -121,7 +124,7 @@ isBoundarySeparated≡isThin {X = X} =
     ≃⟨ Σ-cong-equiv-snd (λ x → Σ-cong-equiv-snd (λ y →
         propBiimpl→Equiv (isPropΠ λ _ → thin x y) (isPropΠ λ _ → thin x y)
           (λ f _ → f tt) (λ f _ → f true))) ⟩
-      𝕊-cocone X Bool 
+      𝕊-cocone X Bool
     ■
 
 isS¹Local≡isSet :
@@ -141,7 +144,7 @@ isS¹Local≡isSet {X = X} =
       ≃⟨ _ , toIsEquiv _ (localX tt) ⟩
         (S¹ → X)
       ≃⟨ isoToEquiv IsoFunSpaceS¹ ⟩
-        Σ[ x ∈ X ] (x ≡ x) 
+        Σ[ x ∈ X ] (x ≡ x)
       ■
 
     K : (x : X) (p : x ≡ x) → p ≡ refl
@@ -189,15 +192,26 @@ isPreorder = isLocal Fᴾ
 ηᴾ : X → ∥ X ∥ᴾ
 ηᴾ = ∣_∣
 
-isPreorderP : {X : Type ℓ} → isPreorder ∥ X ∥ᴾ
-isPreorderP = isLocal-Localize Fᴾ _
+∥∥ᴾ-isPreorder : {X : Type ℓ} → isPreorder ∥ X ∥ᴾ
+∥∥ᴾ-isPreorder = isLocal-Localize Fᴾ _
 
 isPropIsPreorder : {X : Type ℓ} → isProp (isPreorder X)
 isPropIsPreorder =
   isPropΠ λ _ → isPropIsPathSplitEquiv _
 
-rec : isPreorder Y → (X → Y) → ∥ X ∥ᴾ → Y
-rec = Localization.rec
+Preorder : (ℓ : Level) → Type (ℓ-suc ℓ)
+Preorder ℓ = TypeWithStr ℓ isPreorder
+
+recᴾ : isPreorder Y → (X → Y) → ∥ X ∥ᴾ → Y
+recᴾ = Localization.rec
+
+recᴾ₂ : {X : Type ℓ} {Y : Type ℓ'} {Z : Type ℓ''}
+  → isPreorder Z → (X → Y → Z) → ∥ X ∥ᴾ → ∥ Y ∥ᴾ → Z
+recᴾ₂ localZ f x y = recᴾ localZ (λ x₀ → recᴾ localZ (f x₀) y) x
+
+recᴾ₃ : {X : Type ℓ} {Y : Type ℓ'} {Z : Type ℓ''} {W : Type ℓ'''}
+  → isPreorder W → (X → Y → Z → W) → ∥ X ∥ᴾ → ∥ Y ∥ᴾ → ∥ Z ∥ᴾ → W
+recᴾ₃ localW f x y z = recᴾ localW (λ x₀ → recᴾ₂ localW (f x₀) y z) x
 
 open isPathSplitEquiv
 
@@ -214,19 +228,21 @@ isProp→isLocal s isPropX α =
     (λ _ → isPropΠ (λ _ → isPropX) _ _)
     (λ _ → isPropΠ (λ _ → isPropX) _ _)
 
-isPreorder→isThin :
-  {X : Type ℓ}
-  → isPreorder X
-  → isThin X
-isPreorder→isThin isPreorderX =
-  transport isBoundarySeparated≡isThin λ _ → isPreorderX thin
+opaque
+  isPreorder→isThin :
+    {X : Type ℓ}
+    → isPreorder X
+    → isThin X
+  isPreorder→isThin isPreorderX =
+    transport isBoundarySeparated≡isThin λ _ → isPreorderX thin
 
-isPreorder→isSet :
-  {X : Type ℓ}
-  → isPreorder X
-  → isSet X
-isPreorder→isSet isPreorderX =
-  transport isS¹Local≡isSet λ _ → isPreorderX hset
+opaque
+  isPreorder→isSet :
+    {X : Type ℓ}
+    → isPreorder X
+    → isSet X
+  isPreorder→isSet isPreorderX =
+    transport isS¹Local≡isSet λ _ → isPreorderX hset
 
 isProp→isPreorder :
   {X : Type ℓ}
@@ -256,28 +272,29 @@ isPreorderΠ {X = X} {Y = Y} isPreorderY α =
     ((x : X) → Sᴾ α → Y x) ≃⟨ invEquiv (flip≃ (Sᴾ α)) ⟩
     (Sᴾ α → (x : X) → Y x) ■
 
-isPreorder→isSegal :
-  {X : Type ℓ}
-  → isPreorder X
-  → isSegal X
-isPreorder→isSegal isPreorderX =
-  transport (sym isSegal≡isPathTransitive) (λ _ → isPreorderX segal)
+opaque
+  isPreorder→isSegal :
+    {X : Type ℓ}
+    → isPreorder X
+    → isSegal X
+  isPreorder→isSegal isPreorderX =
+    transport (sym isSegal≡isPathTransitive) (λ _ → isPreorderX segal)
 
 isSetThinSegal→isPreorder :
   {X : Type ℓ} → isSet X → isThin X → isSegal X → isPreorder X
 isSetThinSegal→isPreorder setX thinX segalX segal =
   transport isSegal≡isPathTransitive segalX tt
-isSetThinSegal→isPreorder setX thinX segalX thin = 
+isSetThinSegal→isPreorder setX thinX segalX thin =
   transport (sym isBoundarySeparated≡isThin) thinX tt
 isSetThinSegal→isPreorder setX thinX segalX hset =
   transport (sym isS¹Local≡isSet) setX tt
 
-rec-unique :
+recᴾ-unique :
   isPreorder Y
   → (f g : ∥ X ∥ᴾ → Y)
   → ((x : X) → f (ηᴾ x) ≡ g (ηᴾ x))
   → (z : ∥ X ∥ᴾ) → f z ≡ g z
-rec-unique {X = X} isPreorderY f g p = elim
+recᴾ-unique {X = X} isPreorderY f g p = elim
   where
   Q : ∥ X ∥ᴾ → Type _
   Q z = f z ≡ g z
@@ -326,42 +343,71 @@ rec-unique {X = X} isPreorderY f g p = elim
 
 ηᴾ-universal : isPreorder Y → (∥ X ∥ᴾ → Y) ≃ (X → Y)
 ηᴾ-universal localY = isoToEquiv
-  (iso (_∘ ηᴾ) (rec localY) (λ _ → refl)
-    (λ f → funExt (rec-unique localY _ f (λ _ → refl))))
+  (iso (_∘ ηᴾ) (recᴾ localY) (λ _ → refl)
+    (λ f → funExt (recᴾ-unique localY _ f (λ _ → refl))))
 
-rec-unique₂ : {X : Type ℓ} {Y : Type ℓ'} {Z : Type ℓ''}
+recᴾ-unique₂ : {X : Type ℓ} {Y : Type ℓ'} {Z : Type ℓ''}
   → isPreorder Z → (f g : ∥ X ∥ᴾ → ∥ Y ∥ᴾ → Z)
   → ((x : X) (y : Y) → f (ηᴾ x) (ηᴾ y) ≡ g (ηᴾ x) (ηᴾ y))
   → (x : ∥ X ∥ᴾ) (y : ∥ Y ∥ᴾ) → f x y ≡ g x y
-rec-unique₂ localZ f g p x y =
-  rec-unique localZ (λ x → f x y) (λ x → g x y)
-    (λ x → rec-unique localZ (f (ηᴾ x)) (g (ηᴾ x)) (p x) y) x
+recᴾ-unique₂ localZ f g p x y =
+  recᴾ-unique localZ (λ x → f x y) (λ x → g x y)
+    (λ x → recᴾ-unique localZ (f (ηᴾ x)) (g (ηᴾ x)) (p x) y) x
 
-rec-unique₃ : {X : Type ℓ} {Y : Type ℓ'} {Z : Type ℓ''} {W : Type ℓ'''}
+recᴾ-unique₃ : {X : Type ℓ} {Y : Type ℓ'} {Z : Type ℓ''} {W : Type ℓ'''}
   → isPreorder W → (f g : ∥ X ∥ᴾ → ∥ Y ∥ᴾ → ∥ Z ∥ᴾ → W)
   → ((x : X) (y : Y) (z : Z) → f (ηᴾ x) (ηᴾ y) (ηᴾ z) ≡ g (ηᴾ x) (ηᴾ y) (ηᴾ z))
   → (x : ∥ X ∥ᴾ) (y : ∥ Y ∥ᴾ) (z : ∥ Z ∥ᴾ) → f x y z ≡ g x y z
-rec-unique₃ localW f g p x y z =
-  rec-unique localW (λ x → f x y z) (λ x → g x y z)
-    (λ x → rec-unique₂ localW (f (ηᴾ x)) (g (ηᴾ x)) (p x) y z) x
+recᴾ-unique₃ localW f g p x y z =
+  recᴾ-unique localW (λ x → f x y z) (λ x → g x y z)
+    (λ x → recᴾ-unique₂ localW (f (ηᴾ x)) (g (ηᴾ x)) (p x) y z) x
 
-rec-uniqueP : {X : Type ℓ} {Y : I → Type ℓ'}
+recᴾ-unique₄ : {X : Type ℓ} {Y : Type ℓ'} {Z : Type ℓ''} {W : Type ℓ'''} {V : Type ℓ''''}
+  → isPreorder V → (f g : ∥ X ∥ᴾ → ∥ Y ∥ᴾ → ∥ Z ∥ᴾ → ∥ W ∥ᴾ → V)
+  → ((x : X) (y : Y) (z : Z) (w : W)
+      → f (ηᴾ x) (ηᴾ y) (ηᴾ z) (ηᴾ w) ≡ g (ηᴾ x) (ηᴾ y) (ηᴾ z) (ηᴾ w))
+  → (x : ∥ X ∥ᴾ) (y : ∥ Y ∥ᴾ) (z : ∥ Z ∥ᴾ) (w : ∥ W ∥ᴾ) → f x y z w ≡ g x y z w
+recᴾ-unique₄ localV f g p x y z w =
+  recᴾ-unique localV (λ x → f x y z w) (λ x → g x y z w)
+    (λ x → recᴾ-unique₃ localV (f (ηᴾ x)) (g (ηᴾ x)) (p x) y z w) x
+
+recᴾ-uniqueP : {X : Type ℓ} {Y : I → Type ℓ'}
   → isPreorder (Y i1)
   → (f : ∥ X ∥ᴾ → Y i0) (g : ∥ X ∥ᴾ → Y i1)
   → ((x : X) → PathP Y (f (ηᴾ x)) (g (ηᴾ x)))
   → (x : ∥ X ∥ᴾ) → PathP Y (f x) (g x)
-rec-uniqueP {Y = Y} localY f g p x = toPathP
-  (rec-unique localY (λ x → transport (λ i → Y i) (f x)) g
+recᴾ-uniqueP {Y = Y} localY f g p x = toPathP
+  (recᴾ-unique localY (λ x → transport (λ i → Y i) (f x)) g
     (λ x → fromPathP (p x)) x)
 
-rec-uniqueP₂ : {X : Type ℓ} {Y : Type ℓ'} {Z : I → Type ℓ''}
+recᴾ-uniqueP₂ : {X : Type ℓ} {Y : Type ℓ'} {Z : I → Type ℓ''}
   → isPreorder (Z i1)
   → (f : ∥ X ∥ᴾ → ∥ Y ∥ᴾ → Z i0) (g : ∥ X ∥ᴾ → ∥ Y ∥ᴾ → Z i1)
   → ((x : X) (y : Y) → PathP Z (f (ηᴾ x) (ηᴾ y)) (g (ηᴾ x) (ηᴾ y)))
   → (x : ∥ X ∥ᴾ) (y : ∥ Y ∥ᴾ) → PathP Z (f x y) (g x y)
-rec-uniqueP₂ {Z = Z} localZ f g p x y = toPathP
-  (rec-unique₂ localZ (λ x y → transport (λ i → Z i) (f x y)) g
+recᴾ-uniqueP₂ {Z = Z} localZ f g p x y = toPathP
+  (recᴾ-unique₂ localZ (λ x y → transport (λ i → Z i) (f x y)) g
     (λ x y → fromPathP (p x y)) x y)
+
+recᴾ-hom : {X : Type ℓ} {Y : Type ℓ'}
+  → isPreorder Y → (f g : ∥ X ∥ᴾ → Y)
+  → ((x : X) → f (ηᴾ x) ≤ g (ηᴾ x))
+  → (x : ∥ X ∥ᴾ) → f x ≤ g x
+recᴾ-hom {X = X} {Y = Y} localY f g h x =
+  line x
+  , recᴾ-unique localY (λ x → line x 𝟎) f (λ x → left-endpoint (h x)) x
+  , recᴾ-unique localY (λ x → line x 𝟏) g (λ x → right-endpoint (h x)) x
+  where
+  line : ∥ X ∥ᴾ → 𝟚 → Y
+  line = recᴾ (isPreorderΠ λ _ → localY) (λ x → hom-path (h x))
+
+recᴾ-hom₂ : {X : Type ℓ} {Y : Type ℓ'} {Z : Type ℓ''}
+  → isPreorder Z → (f g : ∥ X ∥ᴾ → ∥ Y ∥ᴾ → Z)
+  → ((x : X) (y : Y) → f (ηᴾ x) (ηᴾ y) ≤ g (ηᴾ x) (ηᴾ y))
+  → (x : ∥ X ∥ᴾ) (y : ∥ Y ∥ᴾ) → f x y ≤ g x y
+recᴾ-hom₂ localZ f g h x y =
+  recᴾ-hom localZ (λ x → f x y) (λ x → g x y)
+    (λ x → recᴾ-hom localZ (f (ηᴾ x)) (g (ηᴾ x)) (h x) y) x
 
 isPreorder≃ : {X : Type ℓ} {Y : Type ℓ'} → X ≃ Y → isPreorder X → isPreorder Y
 isPreorder≃ e localX α = fromIsEquiv _
@@ -380,4 +426,31 @@ isPreorder× {X = X} {Y = Y} localX localY α =
   split W = isoToEquiv (iso
     (λ f → (fst ∘ f) , (snd ∘ f))
     (λ f x → f .fst x , f .snd x)
+    (λ _ → refl) (λ _ → refl))
+
+isPreorderEqualizer : {X : Type ℓ} {Y : Type ℓ'} (f g : X → Y)
+  → isPreorder X → isPreorder Y → isPreorder (Σ X (λ x → f x ≡ g x))
+isPreorderEqualizer {X = X} {Y = Y} f g localX localY α =
+  fromIsEquiv _ (equivIsEquiv $
+    ( Tᴾ α → Σ X (λ x → f x ≡ g x))
+    ≃⟨ split (Tᴾ α) ⟩
+      Σ (Tᴾ α → X) (λ h → (w : Tᴾ α) → f (h w) ≡ g (h w))
+    ≃⟨ Σ-cong-equiv (_ , toIsEquiv _ (localX α)) (λ h →
+        ((w : Tᴾ α) → f (h w) ≡ g (h w))
+          ≃⟨ funExtEquiv ⟩
+        (f ∘ h ≡ g ∘ h)
+          ≃⟨ congEquiv (_ , toIsEquiv _ (localY α)) ⟩
+        (f ∘ h ∘ Fᴾ α ≡ g ∘ h ∘ Fᴾ α)
+          ≃⟨ invEquiv funExtEquiv ⟩
+        ((w : Sᴾ α) → f (h (Fᴾ α w)) ≡ g (h (Fᴾ α w))) ■) ⟩
+      Σ (Sᴾ α → X) (λ h → (w : Sᴾ α) → f (h w) ≡ g (h w))
+    ≃⟨ invEquiv (split (Sᴾ α)) ⟩
+      (Sᴾ α → Σ X (λ x → f x ≡ g x))
+    ■)
+  where
+  split : (W : Type₀)
+    → (W → Σ X (λ x → f x ≡ g x)) ≃ Σ (W → X) (λ h → (w : W) → f (h w) ≡ g (h w))
+  split W = isoToEquiv (iso
+    (λ k → fst ∘ k , snd ∘ k)
+    (λ (h , p) w → h w , p w)
     (λ _ → refl) (λ _ → refl))

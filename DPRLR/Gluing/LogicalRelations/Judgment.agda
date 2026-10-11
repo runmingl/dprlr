@@ -1,69 +1,89 @@
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Equiv
 open import Cubical.Foundations.Isomorphism
-open import Cubical.Data.Sigma renaming (fst to fstΣ ; snd to sndΣ)
+open import Cubical.Foundations.HLevels using (isSetΠ2)
 
 open import DPRLR.Simplicial.Hom
 open import DPRLR.Simplicial.Contravariant
-open import DPRLR.Object.Model.Model using (SimpleDirectedCwF)
+open import DPRLR.Simplicial.PreorderLocalization
+open import DPRLR.Object.Model.Model
 open import DPRLR.Cubical.Path using (ΣPath→PathP)
 
 module DPRLR.Gluing.LogicalRelations.Judgment
-  {ℓS ℓM : Level} (𝓜 : SimpleDirectedCwF ℓS ℓM) where
+  {ℓS ℓM : Level} (𝓜 : SimpleCwF ℓS ℓM) where
+  open import DPRLR.Gluing.Base 𝓜
   infix 4 _≤ᵍ_
   infixl 30 _∘₀_
   infixl 40 _[_]Tm₀
 
-  open SimpleDirectedCwF 𝓜
-    renaming
-      ( Ctx to Ctxₘ
-      ; Ty to Tyₘ
-      ; Sub to Subₘ
-      ; Tm to Tmₘ
-      ; ε to εₘ
-      ; _∘_ to _∘ₘ_
-      ; _[_]Tm to _[_]Tmₘ
-      ; sub-set to sub-setₘ
-      ; tm-set to tm-setₘ
-      ; tm-thin to tm-thinₘ
-      )
-
   record GluCtx : Type (ℓ-max ℓS (ℓ-suc ℓM)) where
     field
       Γ° : Ctxₘ
-      Γ∙ : Subₘ εₘ Γ° → Type ℓM
+      Γ∙ : ⌞ Subₘ εₘ Γ° ⌟ → Type ℓM
+      Γ∙-isSet : (γ° : ⌞ Subₘ εₘ Γ° ⌟) → isSet (Γ∙ γ°)
       cΓ : isContravariant Γ∙
 
   open GluCtx
 
   record GluSub (Γ Δ : GluCtx) : Type ℓM where
     field
-      σ° : Subₘ (Γ° Γ) (Γ° Δ)
-      σ∙ : (γ° : Subₘ εₘ (Γ° Γ)) → Γ∙ Γ γ° → Γ∙ Δ (σ° ∘ₘ γ°)
+      σ° : ⌞ Subₘ (Γ° Γ) (Γ° Δ) ⌟
+      σ∙ : (γ° : ⌞ Subₘ εₘ (Γ° Γ) ⌟) → Γ∙ Γ γ° → Γ∙ Δ (σ° ∘ₘ γ°)
 
   open GluSub
+
+  GluSub-isPreorder : (Γ Δ : GluCtx) → isPreorder (GluSub Γ Δ)
+  GluSub-isPreorder Γ Δ =
+    isPreorder≃
+      (isoToEquiv (iso
+        (λ (s° , s∙) → record { σ° = s° ; σ∙ = s∙ })
+        (λ s → σ° s , σ∙ s)
+        (λ _ → refl) (λ _ → refl)))
+      (contravariant-total-isPreorder
+        {C = λ s° → (γ° : ⌞ Subₘ εₘ (Γ° Γ) ⌟) → Γ∙ Γ γ° → Γ∙ Δ (s° ∘ₘ γ°)}
+        (sub-localₘ (Γ° Γ) (Γ° Δ))
+        (contravariant-Π λ γ° →
+          contravariant-Π λ _ →
+            contravariant-reindex (λ s° → s° ∘ₘ γ°) (cΓ Δ))
+        (λ s° → isSetΠ2 λ γ° _ → Γ∙-isSet Δ (s° ∘ₘ γ°)))
 
   record GluTy : Type (ℓ-max ℓS (ℓ-suc ℓM)) where
     field
       A° : Tyₘ
-      A∙ : Tmₘ εₘ A° → Type ℓM
+      A∙ : ⌞ Tmₘ εₘ A° ⌟ → Type ℓM
+      A∙-isSet : (M° : ⌞ Tmₘ εₘ A° ⌟) → isSet (A∙ M°)
       cA : isContravariant A∙
 
   open GluTy
 
   record GluTm (Γ : GluCtx) (A : GluTy) : Type ℓM where
     field
-      M° : Tmₘ (Γ° Γ) (A° A)
-      M∙ : (γ° : Subₘ εₘ (Γ° Γ)) (γ∙ : Γ∙ Γ γ°)
+      M° : ⌞ Tmₘ (Γ° Γ) (A° A) ⌟
+      M∙ : (γ° : ⌞ Subₘ εₘ (Γ° Γ) ⌟) (γ∙ : Γ∙ Γ γ°)
         → A∙ A (M° [ γ° ]Tmₘ)
 
   open GluTm
 
+  GluTm-isPreorder : (Γ : GluCtx) (A : GluTy) → isPreorder (GluTm Γ A)
+  GluTm-isPreorder Γ A =
+    isPreorder≃
+      (isoToEquiv (iso
+        (λ (m° , m∙) → record { M° = m° ; M∙ = m∙ })
+        (λ m → M° m , M∙ m)
+        (λ _ → refl) (λ _ → refl)))
+      (contravariant-total-isPreorder
+        {C = λ m° → (γ° : ⌞ Subₘ εₘ (Γ° Γ) ⌟) (γ∙ : Γ∙ Γ γ°) → A∙ A (m° [ γ° ]Tmₘ)}
+        (tm-localₘ (Γ° Γ) (A° A))
+        (contravariant-Π λ γ° →
+          contravariant-Π λ _ →
+            contravariant-reindex (λ m° → m° [ γ° ]Tmₘ) (cA A))
+        (λ m° → isSetΠ2 λ γ° _ → A∙-isSet A (m° [ γ° ]Tmₘ)))
+
   GluSub₀ : GluCtx → Type ℓM
-  GluSub₀ Γ = Σ (Subₘ εₘ (Γ° Γ)) (Γ∙ Γ)
+  GluSub₀ Γ = Σ ⌞ Subₘ εₘ (Γ° Γ) ⌟ (Γ∙ Γ)
 
   GluTm₀ : GluTy → Type ℓM
-  GluTm₀ A = Σ (Tmₘ εₘ (A° A)) (A∙ A)
+  GluTm₀ A = Σ ⌞ Tmₘ εₘ (A° A) ⌟ (A∙ A)
 
   _∘₀_ : {Γ Δ : GluCtx} → GluSub Γ Δ → GluSub₀ Γ → GluSub₀ Δ
   σ ∘₀ (γ , γ∙) = σ° σ ∘ₘ γ , σ∙ σ γ γ∙
@@ -89,7 +109,7 @@ module DPRLR.Gluing.LogicalRelations.Judgment
     (M N : GluTm Γ A) : Type ℓM where
     field
       r° : M° M ≤ M° N
-      r∙ : (γ° : Subₘ εₘ (Γ° Γ)) (γ∙ : Γ∙ Γ γ°)
+      r∙ : (γ° : ⌞ Subₘ εₘ (Γ° Γ) ⌟) (γ∙ : Γ∙ Γ γ°)
         → A∙ A ⊢ M∙ M γ° γ∙
           ≤[ hom-map (λ t → t [ γ° ]Tmₘ) r° ]
           M∙ N γ° γ∙
@@ -149,9 +169,9 @@ module DPRLR.Gluing.LogicalRelations.Judgment
     ; r∙ = λ γ γ∙ →
         let e = h (γ , γ∙) in
         subst (λ f → A∙ A ⊢ M∙ t γ γ∙ ≤[ f ] M∙ u γ γ∙)
-          (tm-thinₘ εₘ (A° A) _ _ (hom-map fstΣ e)
+          (tm-thinₘ εₘ (A° A) _ _ (hom-map fst e)
             (hom-map (λ t → t [ γ ]Tmₘ) r))
-          ((λ i → hom-path e i .sndΣ)
-          , (λ i → left-endpoint e i .sndΣ)
-          , (λ i → right-endpoint e i .sndΣ))
+          ((λ i → hom-path e i .snd)
+          , (λ i → left-endpoint e i .snd)
+          , (λ i → right-endpoint e i .snd))
     }

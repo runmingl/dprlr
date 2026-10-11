@@ -17,24 +17,18 @@ import DPRLR.Simplicial.Product
 import DPRLR.Object.Model.Model
 import DPRLR.Object.Model.Morphism.Base
 import DPRLR.Object.Model.Morphism.Properties
-import DPRLR.Object.Model.DisplayedModel
 
-import DPRLR.Object.Syntax.Raw.Base
-import DPRLR.Object.Syntax.Raw.Model
-import DPRLR.Object.Syntax.Raw.Displayed
-
-import DPRLR.Object.Syntax.Localized.Base
-import DPRLR.Object.Syntax.Localized.Model
-import DPRLR.Object.Syntax.Localized.Displayed
-
-import DPRLR.Object.Syntax.Initiality.Raw
-import DPRLR.Object.Syntax.Initiality.Localized
+import DPRLR.Object.Syntax
+import DPRLR.Object.Syntax.Raw
+import DPRLR.Object.Syntax.Base
+import DPRLR.Object.Syntax.Model
+import DPRLR.Object.Syntax.Initiality
 
 import DPRLR.Gluing.LogicalRelations.Judgment
 import DPRLR.Gluing.LogicalRelations.Substitution
 import DPRLR.Gluing.LogicalRelations.Product
 import DPRLR.Gluing.LogicalRelations.Function
 import DPRLR.Gluing.LogicalRelations.Bool
+import DPRLR.Gluing.Base
 import DPRLR.Gluing.GluingModel
-import DPRLR.Gluing.DisplayedModel
 import DPRLR.Gluing.FTLR

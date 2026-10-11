@@ -1,44 +1,27 @@
-module DPRLR.Gluing.LogicalRelations.Function where
-
 open import Cubical.Foundations.Prelude
-open import DPRLR.Cubical.Path using (ΣPathP-subst)
+open import Cubical.Foundations.HLevels using (isSetΠ2)
 open import Cubical.Data.Sigma
 
 open import DPRLR.Simplicial.Hom
 open import DPRLR.Simplicial.Contravariant
 open import DPRLR.Simplicial.Product using (Σ≤)
 open import DPRLR.Simplicial.Function
-open import DPRLR.Object.Model.Model using (SimpleDirectedCwF)
+open import DPRLR.Simplicial.PreorderLocalization using (⌞_⌟)
+open import DPRLR.Object.Model.Model
+open import DPRLR.Cubical.Path using (ΣPathP-subst)
 
-module _ {ℓS ℓM : Level} (𝓜 : SimpleDirectedCwF ℓS ℓM) where
+module DPRLR.Gluing.LogicalRelations.Function
+  {ℓS ℓM : Level} (𝓜 : SimpleCwF ℓS ℓM) where
   open import DPRLR.Gluing.LogicalRelations.Judgment 𝓜
   open import DPRLR.Gluing.LogicalRelations.Substitution 𝓜
-
-  open SimpleDirectedCwF 𝓜
-    renaming
-      ( Sub to Subₘ
-      ; Tm to Tmₘ
-      ; ε to εₘ
-      ; _∘_ to _∘ₘ_
-      ; _[_]Tm to _[_]Tmₘ
-      ; Tm-∘ to Tm-∘ₘ
-      ; _⇒ᵗʸ_ to _⇒ₘ_
-      ; lam to lamₘ
-      ; app to appₘ
-      ; lam[] to lam[]ₘ
-      ; app[] to app[]ₘ
-      ; β⇒ to β⇒ₘ
-      ; β⇒-subst to β⇒-substₘ
-      ; η⇒ to η⇒ₘ
-      ; tm-thin to tm-thinₘ
-      )
+  open import DPRLR.Gluing.Base 𝓜
 
   FUN∙ :
     (A B : GluTy)
-    → Tmₘ εₘ (GluTy.A° A ⇒ₘ GluTy.A° B)
+    → ⌞ Tmₘ εₘ (GluTy.A° A ⇒ₘ GluTy.A° B) ⌟
     → Type ℓM
   FUN∙ A B F =
-    (M° : Tmₘ εₘ (GluTy.A° A))
+    (M° : ⌞ Tmₘ εₘ (GluTy.A° A) ⌟)
     → GluTy.A∙ A M°
     → GluTy.A∙ B (appₘ F M°)
 
@@ -57,6 +40,8 @@ module _ {ℓS ℓM : Level} (𝓜 : SimpleDirectedCwF ℓS ℓM) where
     → GluTy
   GluTy.A° (FUN A B) = GluTy.A° A ⇒ₘ GluTy.A° B
   GluTy.A∙ (FUN A B) = FUN∙ A B
+  GluTy.A∙-isSet (FUN A B) F =
+    isSetΠ2 λ M° _ → GluTy.A∙-isSet B (appₘ F M°)
   GluTy.cA (FUN A B) = FUN-contravariant A B
 
   APP₀ : (A B : GluTy)
@@ -199,8 +184,8 @@ module _ {ℓS ℓM : Level} (𝓜 : SimpleDirectedCwF ℓS ℓM) where
               (pointwise γ γ∙ m m∙)
     }
     where
-    pointwise : (γ : Subₘ εₘ (GluCtx.Γ° Γ)) (γ∙ : GluCtx.Γ∙ Γ γ)
-      (m : Tmₘ εₘ (GluTy.A° A)) (m∙ : GluTy.A∙ A m)
+    pointwise : (γ : ⌞ Subₘ εₘ (GluCtx.Γ° Γ) ⌟) (γ∙ : GluCtx.Γ∙ Γ γ)
+      (m : ⌞ Tmₘ εₘ (GluTy.A° A) ⌟) (m∙ : GluTy.A∙ A m)
       → GluTm.M∙ (LAM {Γ = Γ} {A = A} {B = B} (FUNη-body {A = A} {B = B} F)) γ γ∙ m m∙
         ≡ contrav-transport (GluTy.cA B)
             (hom-map (λ f → appₘ (f [ γ ]Tmₘ) m) (η⇒ₘ (GluTm.M° F)))

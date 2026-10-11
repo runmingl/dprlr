@@ -2,7 +2,8 @@ module DPRLR.Object.Model.Morphism.Base where
 
 open import Cubical.Foundations.Prelude
 
-open import DPRLR.Object.Model.Model using (SimpleCwF ; SimpleDirectedCwF)
+open import DPRLR.Simplicial.PreorderLocalization using (⌞_⌟)
+open import DPRLR.Object.Model.Model
 
 record SortMorphism {ℓCS ℓC ℓMS ℓM : Level} (𝓒 : SimpleCwF ℓCS ℓC) (𝓜 : SimpleCwF ℓMS ℓM)
   : Type (ℓ-max ℓCS ℓMS) where
@@ -28,44 +29,44 @@ record MorphismOver {ℓCS ℓC ℓMS ℓM : Level}
   open SortMorphism sorts
 
   field
-    Subᶠ : {Γ Δ : C.Ctx} → C.Sub Γ Δ → M.Sub (Ctxᶠ Γ) (Ctxᶠ Δ)
-    Tmᶠ : {Γ : C.Ctx} {A : C.Ty} → C.Tm Γ A → M.Tm (Ctxᶠ Γ) (Tyᶠ A)
+    Subᶠ : {Γ Δ : C.Ctx} → ⌞ C.Sub Γ Δ ⌟ → ⌞ M.Sub (Ctxᶠ Γ) (Ctxᶠ Δ) ⌟
+    Tmᶠ : {Γ : C.Ctx} {A : C.Ty} → ⌞ C.Tm Γ A ⌟ → ⌞ M.Tm (Ctxᶠ Γ) (Tyᶠ A) ⌟
 
     idᶠ : {Γ : C.Ctx} → Subᶠ (C.id {Γ}) ≡ M.id
-    ∘ᶠ : {Γ Δ Θ : C.Ctx} (τ : C.Sub Θ Δ) (σ : C.Sub Γ Θ)
+    ∘ᶠ : {Γ Δ Θ : C.Ctx} (τ : ⌞ C.Sub Θ Δ ⌟) (σ : ⌞ C.Sub Γ Θ ⌟)
       → Subᶠ (τ C.∘ σ) ≡ (Subᶠ τ M.∘ Subᶠ σ)
     ε-subᶠ : {Γ : C.Ctx}
-      → PathP (λ i → M.Sub (Ctxᶠ Γ) (εᶠ i)) (Subᶠ C.ε-sub) M.ε-sub
+      → PathP (λ i → ⌞ M.Sub (Ctxᶠ Γ) (εᶠ i) ⌟) (Subᶠ C.ε-sub) M.ε-sub
     pᶠ : {Γ : C.Ctx} {A : C.Ty}
-      → PathP (λ i → M.Sub (▷ᶠ Γ A i) (Ctxᶠ Γ)) (Subᶠ C.p) M.p
+      → PathP (λ i → ⌞ M.Sub (▷ᶠ Γ A i) (Ctxᶠ Γ) ⌟) (Subᶠ C.p) M.p
     qᶠ : {Γ : C.Ctx} {A : C.Ty}
-      → PathP (λ i → M.Tm (▷ᶠ Γ A i) (Tyᶠ A)) (Tmᶠ C.q) M.q
-    ⟨⟩ᶠ : {Γ Δ : C.Ctx} {A : C.Ty} (σ : C.Sub Γ Δ) (t : C.Tm Γ A)
-      → PathP (λ i → M.Sub (Ctxᶠ Γ) (▷ᶠ Δ A i))
+      → PathP (λ i → ⌞ M.Tm (▷ᶠ Γ A i) (Tyᶠ A) ⌟) (Tmᶠ C.q) M.q
+    ⟨⟩ᶠ : {Γ Δ : C.Ctx} {A : C.Ty} (σ : ⌞ C.Sub Γ Δ ⌟) (t : ⌞ C.Tm Γ A ⌟)
+      → PathP (λ i → ⌞ M.Sub (Ctxᶠ Γ) (▷ᶠ Δ A i) ⌟)
           (Subᶠ C.⟨ σ , t ⟩) M.⟨ Subᶠ σ , Tmᶠ t ⟩
-    []ᶠ : {Γ Δ : C.Ctx} {A : C.Ty} (t : C.Tm Δ A) (σ : C.Sub Γ Δ)
+    []ᶠ : {Γ Δ : C.Ctx} {A : C.Ty} (t : ⌞ C.Tm Δ A ⌟) (σ : ⌞ C.Sub Γ Δ ⌟)
       → Tmᶠ (t C.[ σ ]Tm) ≡ (Tmᶠ t M.[ Subᶠ σ ]Tm)
     trueᶠ : {Γ : C.Ctx}
-      → PathP (λ i → M.Tm (Ctxᶠ Γ) (Boolᶠ i)) (Tmᶠ C.true) M.true
+      → PathP (λ i → ⌞ M.Tm (Ctxᶠ Γ) (Boolᶠ i) ⌟) (Tmᶠ C.true) M.true
     falseᶠ : {Γ : C.Ctx}
-      → PathP (λ i → M.Tm (Ctxᶠ Γ) (Boolᶠ i)) (Tmᶠ C.false) M.false
-    ifᶠ : {Γ : C.Ctx} {A : C.Ty} (b : C.Tm Γ C.Bool) (t u : C.Tm Γ A)
+      → PathP (λ i → ⌞ M.Tm (Ctxᶠ Γ) (Boolᶠ i) ⌟) (Tmᶠ C.false) M.false
+    ifᶠ : {Γ : C.Ctx} {A : C.Ty} (b : ⌞ C.Tm Γ C.Bool ⌟) (t u : ⌞ C.Tm Γ A ⌟)
       → Tmᶠ (C.if b then t else u)
-        ≡ M.if subst (M.Tm (Ctxᶠ Γ)) Boolᶠ (Tmᶠ b) then Tmᶠ t else Tmᶠ u
-    pairᶠ : {Γ : C.Ctx} {A B : C.Ty} (t : C.Tm Γ A) (u : C.Tm Γ B)
-      → PathP (λ i → M.Tm (Ctxᶠ Γ) (×ᶠ A B i))
+        ≡ M.if subst (λ X → ⌞ M.Tm (Ctxᶠ Γ) X ⌟) Boolᶠ (Tmᶠ b) then Tmᶠ t else Tmᶠ u
+    pairᶠ : {Γ : C.Ctx} {A B : C.Ty} (t : ⌞ C.Tm Γ A ⌟) (u : ⌞ C.Tm Γ B ⌟)
+      → PathP (λ i → ⌞ M.Tm (Ctxᶠ Γ) (×ᶠ A B i) ⌟)
           (Tmᶠ (C.pair t u)) (M.pair (Tmᶠ t) (Tmᶠ u))
-    fstᶠ : {Γ : C.Ctx} {A B : C.Ty} (t : C.Tm Γ (A C.×ᵗʸ B))
-      → Tmᶠ (C.fst t) ≡ M.fst (subst (M.Tm (Ctxᶠ Γ)) (×ᶠ A B) (Tmᶠ t))
-    sndᶠ : {Γ : C.Ctx} {A B : C.Ty} (t : C.Tm Γ (A C.×ᵗʸ B))
-      → Tmᶠ (C.snd t) ≡ M.snd (subst (M.Tm (Ctxᶠ Γ)) (×ᶠ A B) (Tmᶠ t))
-    lamᶠ : {Γ : C.Ctx} {A B : C.Ty} (t : C.Tm (Γ C.▷ A) B)
-      → PathP (λ i → M.Tm (Ctxᶠ Γ) (⇒ᶠ A B i))
+    fstᶠ : {Γ : C.Ctx} {A B : C.Ty} (t : ⌞ C.Tm Γ (A C.×ᵗʸ B) ⌟)
+      → Tmᶠ (C.fst t) ≡ M.fst (subst (λ X → ⌞ M.Tm (Ctxᶠ Γ) X ⌟) (×ᶠ A B) (Tmᶠ t))
+    sndᶠ : {Γ : C.Ctx} {A B : C.Ty} (t : ⌞ C.Tm Γ (A C.×ᵗʸ B) ⌟)
+      → Tmᶠ (C.snd t) ≡ M.snd (subst (λ X → ⌞ M.Tm (Ctxᶠ Γ) X ⌟) (×ᶠ A B) (Tmᶠ t))
+    lamᶠ : {Γ : C.Ctx} {A B : C.Ty} (t : ⌞ C.Tm (Γ C.▷ A) B ⌟)
+      → PathP (λ i → ⌞ M.Tm (Ctxᶠ Γ) (⇒ᶠ A B i) ⌟)
           (Tmᶠ (C.lam t))
-          (M.lam (subst (λ Δ → M.Tm Δ (Tyᶠ B)) (▷ᶠ Γ A) (Tmᶠ t)))
-    appᶠ : {Γ : C.Ctx} {A B : C.Ty} (t : C.Tm Γ (A C.⇒ᵗʸ B)) (u : C.Tm Γ A)
+          (M.lam (subst (λ Δ → ⌞ M.Tm Δ (Tyᶠ B) ⌟) (▷ᶠ Γ A) (Tmᶠ t)))
+    appᶠ : {Γ : C.Ctx} {A B : C.Ty} (t : ⌞ C.Tm Γ (A C.⇒ᵗʸ B) ⌟) (u : ⌞ C.Tm Γ A ⌟)
       → Tmᶠ (C.app t u)
-        ≡ M.app (subst (M.Tm (Ctxᶠ Γ)) (⇒ᶠ A B) (Tmᶠ t)) (Tmᶠ u)
+        ≡ M.app (subst (λ X → ⌞ M.Tm (Ctxᶠ Γ) X ⌟) (⇒ᶠ A B) (Tmᶠ t)) (Tmᶠ u)
 
 record SimpleMorphism {ℓCS ℓC ℓMS ℓM : Level}
   (𝓒 : SimpleCwF ℓCS ℓC) (𝓜 : SimpleCwF ℓMS ℓM)
@@ -100,7 +101,7 @@ identityMorphism 𝓒 = record
     }
   where module C = SimpleCwF 𝓒
 
-isInitialDirected : {ℓCS ℓC : Level} → SimpleDirectedCwF ℓCS ℓC → (ℓMS ℓM : Level)
+isInitialDirected : {ℓCS ℓC : Level} → SimpleCwF ℓCS ℓC → (ℓMS ℓM : Level)
   → Type (ℓ-max (ℓ-max ℓCS ℓC) (ℓ-suc (ℓ-max ℓMS ℓM)))
-isInitialDirected C ℓMS ℓM = (M : SimpleDirectedCwF ℓMS ℓM)
-  → isContr (SimpleMorphism (SimpleDirectedCwF.cwf C) (SimpleDirectedCwF.cwf M))
+isInitialDirected C ℓMS ℓM =
+  (M : SimpleCwF ℓMS ℓM) → isContr (SimpleMorphism C M)

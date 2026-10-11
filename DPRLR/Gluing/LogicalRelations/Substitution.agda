@@ -6,48 +6,26 @@
 --   pointwise.
 
 open import Cubical.Foundations.Prelude
-open import DPRLR.Cubical.Path using (ΣPathP-subst ; ΣPath→PathP)
 open import Cubical.Data.Sigma
 open import Cubical.Data.Unit
+open import Cubical.Foundations.HLevels using (isSetΣ)
 
 open import DPRLR.Simplicial.Contravariant
   using (contrav-lift ; contravariant-reindex ; contravariant-×)
-open import DPRLR.Object.Model.Model using (SimpleDirectedCwF)
+open import DPRLR.Object.Model.Model using (SimpleCwF)
+open import DPRLR.Cubical.Path using (ΣPathP-subst ; ΣPath→PathP)
 
 module DPRLR.Gluing.LogicalRelations.Substitution
-  {ℓS ℓM : Level} (𝓜 : SimpleDirectedCwF ℓS ℓM) where
+  {ℓS ℓM : Level} (𝓜 : SimpleCwF ℓS ℓM) where
   open import DPRLR.Gluing.LogicalRelations.Judgment 𝓜
+  open import DPRLR.Gluing.Base 𝓜
 
   infixl 40 _[_]Tmᵍ
-
-  open SimpleDirectedCwF 𝓜
-    renaming
-      ( id to idₘ
-      ; ε to εₘ
-      ; ε-sub to ε-subₘ
-      ; εη to εηₘ
-      ; _▷_ to _▷ₘ_
-      ; p to pₘ
-      ; q to qₘ
-      ; ⟨_,_⟩ to ⟨_,_⟩ₘ
-      ; _∘_ to _∘ₘ_
-      ; _[_]Tm to _[_]Tmₘ
-      ; id-left to id-leftₘ
-      ; id-right to id-rightₘ
-      ; ∘-assoc to ∘-assocₘ
-      ; sub-set to sub-setₘ
-      ; Tm-id to Tm-idₘ
-      ; Tm-∘ to Tm-∘ₘ
-      ; tm-set to tm-setₘ
-      ; p-⟨⟩ to p-⟨⟩ₘ
-      ; q-⟨⟩ to q-⟨⟩ₘ
-      ; ▷η to ▷ηₘ
-      ; ⟨⟩-∘ to ⟨⟩-∘ₘ
-      )
 
   εᵍ : GluCtx
   GluCtx.Γ° εᵍ = εₘ
   GluCtx.Γ∙ εᵍ _ = Unit*
+  GluCtx.Γ∙-isSet εᵍ _ = isSetUnit*
   contrav-lift (GluCtx.cΓ εᵍ) _ _ =
     (tt* , (λ _ → tt*) , refl , refl) , (λ _ → refl)
 
@@ -177,6 +155,9 @@ module DPRLR.Gluing.LogicalRelations.Substitution
   GluCtx.Γ∙ (Γ ▷ᵍ A) δ° =
     Σ (GluCtx.Γ∙ Γ (pₘ ∘ₘ δ°))
       (λ _ → GluTy.A∙ A (qₘ [ δ° ]Tmₘ))
+  GluCtx.Γ∙-isSet (Γ ▷ᵍ A) δ° =
+    isSetΣ (GluCtx.Γ∙-isSet Γ (pₘ ∘ₘ δ°))
+      (λ _ → GluTy.A∙-isSet A (qₘ [ δ° ]Tmₘ))
   GluCtx.cΓ (Γ ▷ᵍ A) =
     contravariant-×
       (contravariant-reindex (λ δ° → pₘ ∘ₘ δ°) (GluCtx.cΓ Γ))

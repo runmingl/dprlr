@@ -4,7 +4,8 @@ open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.HLevels
   using (isOfHLevelPathP' ; isContrΣ' ; isOfHLevelRetract)
 
-open import DPRLR.Object.Model.Model using (SimpleCwF)
+open import DPRLR.Simplicial.PreorderLocalization using (⌞_⌟)
+open import DPRLR.Object.Model.Model
 open import DPRLR.Object.Model.Morphism.Base using
   (SortMorphism ; MorphismOver ; SimpleMorphism ; simple-morphism)
 
@@ -14,11 +15,11 @@ module _ {ℓCS ℓC ℓMS ℓM : Level}
     module C = SimpleCwF 𝓒
     module M = SimpleCwF 𝓜
 
-  morphismOver-path : (sub-set : (Γ Δ : M.Ctx) → isSet (M.Sub Γ Δ))
-    → (tm-set : (Γ : M.Ctx) (A : M.Ty) → isSet (M.Tm Γ A))
+  morphismOver-path : (sub-set : (Γ Δ : M.Ctx) → isSet ⌞ M.Sub Γ Δ ⌟)
+    → (tm-set : (Γ : M.Ctx) (A : M.Ty) → isSet ⌞ M.Tm Γ A ⌟)
     → {s : SortMorphism 𝓒 𝓜} {f g : MorphismOver 𝓒 𝓜 s}
-    → ({Γ Δ : C.Ctx} (σ : C.Sub Γ Δ) → MorphismOver.Subᶠ f σ ≡ MorphismOver.Subᶠ g σ)
-    → ({Γ : C.Ctx} {A : C.Ty} (t : C.Tm Γ A) → MorphismOver.Tmᶠ f t ≡ MorphismOver.Tmᶠ g t)
+    → ({Γ Δ : C.Ctx} (σ : ⌞ C.Sub Γ Δ ⌟) → MorphismOver.Subᶠ f σ ≡ MorphismOver.Subᶠ g σ)
+    → ({Γ : C.Ctx} {A : C.Ty} (t : ⌞ C.Tm Γ A ⌟) → MorphismOver.Tmᶠ f t ≡ MorphismOver.Tmᶠ g t)
     → f ≡ g
   morphismOver-path sub-set tm-set {s = s} {f = f} {g = g} sub-eq tm-eq i = record
     { Subᶠ = λ σ → sub-eq σ i
@@ -45,23 +46,23 @@ module _ {ℓCS ℓC ℓMS ℓM : Level}
         (λ j → isOfHLevelPathP' 1 (tm-set _ _) (tm-eq C.false j) _) F.falseᶠ G.falseᶠ i
     ; ifᶠ = λ b t u → isProp→PathP
         (λ j → tm-set _ _ (tm-eq (C.if b then t else u) j)
-          (M.if subst (M.Tm _) S.Boolᶠ (tm-eq b j) then tm-eq t j else tm-eq u j))
+          (M.if subst (λ X → ⌞ M.Tm _ X ⌟) S.Boolᶠ (tm-eq b j) then tm-eq t j else tm-eq u j))
         (F.ifᶠ b t u) (G.ifᶠ b t u) i
     ; pairᶠ = λ t u → isProp→PathP
         (λ j → isOfHLevelPathP' 1 (tm-set _ _) (tm-eq (C.pair t u) j)
           (M.pair (tm-eq t j) (tm-eq u j))) (F.pairᶠ t u) (G.pairᶠ t u) i
     ; fstᶠ = λ t → isProp→PathP
         (λ j → tm-set _ _ (tm-eq (C.fst t) j)
-          (M.fst (subst (M.Tm _) (S.×ᶠ _ _) (tm-eq t j)))) (F.fstᶠ t) (G.fstᶠ t) i
+          (M.fst (subst (λ X → ⌞ M.Tm _ X ⌟) (S.×ᶠ _ _) (tm-eq t j)))) (F.fstᶠ t) (G.fstᶠ t) i
     ; sndᶠ = λ t → isProp→PathP
         (λ j → tm-set _ _ (tm-eq (C.snd t) j)
-          (M.snd (subst (M.Tm _) (S.×ᶠ _ _) (tm-eq t j)))) (F.sndᶠ t) (G.sndᶠ t) i
+          (M.snd (subst (λ X → ⌞ M.Tm _ X ⌟) (S.×ᶠ _ _) (tm-eq t j)))) (F.sndᶠ t) (G.sndᶠ t) i
     ; lamᶠ = λ t → isProp→PathP
         (λ j → isOfHLevelPathP' 1 (tm-set _ _) (tm-eq (C.lam t) j)
-          (M.lam (subst (λ Δ → M.Tm Δ _) (S.▷ᶠ _ _) (tm-eq t j)))) (F.lamᶠ t) (G.lamᶠ t) i
+          (M.lam (subst (λ Δ → ⌞ M.Tm Δ _ ⌟) (S.▷ᶠ _ _) (tm-eq t j)))) (F.lamᶠ t) (G.lamᶠ t) i
     ; appᶠ = λ t u → isProp→PathP
         (λ j → tm-set _ _ (tm-eq (C.app t u) j)
-          (M.app (subst (M.Tm _) (S.⇒ᶠ _ _) (tm-eq t j)) (tm-eq u j))) (F.appᶠ t u) (G.appᶠ t u) i
+          (M.app (subst (λ X → ⌞ M.Tm _ X ⌟) (S.⇒ᶠ _ _) (tm-eq t j)) (tm-eq u j))) (F.appᶠ t u) (G.appᶠ t u) i
     }
     where
     module S = SortMorphism s

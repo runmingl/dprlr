@@ -333,7 +333,7 @@ module _ where
         (((λ s → c .fst s 𝟎) , (λ u → c .fst 𝟏 u) , refl) ≡ k)
 
     composite≃square-filler : (f : 𝟚 → A) (z : A) (g : f 𝟏 ≤ z)
-      → Composite (f , refl , refl) g ≃ SquareFiller (f , g .fst , sym (g .snd .fst))
+      → Composite (f , refl , refl) g ≃ SquareFiller (f , hom-path g , sym (left-endpoint g))
     composite≃square-filler {A = A} f z g =
         Composite (f , refl , refl) g
       ≃⟨ isoToEquiv forget-left ⟩
@@ -343,7 +343,7 @@ module _ where
       ≃⟨ isoToEquiv (invIso (fibers-total _ _ _)) ⟩
         fiber (λ { (f , z , q) → f , z , q 𝟏 }) (f , z , g)
       ≃⟨ fiber-square uncarry boundary-unpack commutes (f , z , g) ⟩
-        SquareFiller (f , g .fst , sym (g .snd .fst))
+        SquareFiller (f , hom-path g , sym (left-endpoint g))
       ■
       where
       forget-left : Iso (Composite (f , refl , refl) g)
@@ -362,8 +362,8 @@ module _ where
           (Σ[ c ∈ (Σ[ a ∈ (𝟚 → 𝟚 → A) ] Σ[ z ∈ A ] ((λ s → a s 𝟏) ≡ const z)) ]
             Σ[ f ∈ (𝟚 → A) ] ((λ s → c .fst s 𝟎) ≡ f))
         Iso.fun rearrange (f , z , q) =
-          ((λ s → q s .fst) , z , (λ i s → q s .snd .snd i)) ,
-          f , (λ i s → q s .snd .fst i)
+          (hom-path ∘ q , z , (λ i s → right-endpoint (q s) i)) ,
+          f , (λ i s → left-endpoint (q s) i)
         Iso.inv rearrange ((a , z , p) , f , h) =
           f , z , (λ s → a s , (λ i → h i s) , (λ i → p i s))
         Iso.rightInv rearrange _ = refl
@@ -384,8 +384,8 @@ module _ where
 
       commutes : boundary-unpack .fst ∘ (λ { (f , z , q) → f , z , q 𝟏 }) ≡
         (λ c → restrict (λ t → c .fst (t .fst) (t .snd .fst))) ∘ uncarry .fst
-      commutes i (f , z , q) = (λ s → q s .snd .fst (~ i)) , q 𝟏 .fst ,
-        (λ j → q 𝟏 .snd .fst (~ i ∧ ~ j))
+      commutes i (f , z , q) = (λ s → left-endpoint (q s) (~ i)) , hom-path (q 𝟏) ,
+        (λ j → left-endpoint (q 𝟏) (~ i ∧ ~ j))
 
     UpperFiller : (d : 𝟚 → A) → Type _
     UpperFiller {A = A} d =
@@ -494,7 +494,7 @@ module _ where
 
     normalized : (f : 𝟚 → A) (z : A) (g : f 𝟏 ≤ z) → isContr (Composite (f , refl , refl) g)
     normalized f z g = isOfHLevelRespectEquiv 0 (invEquiv (composite≃square-filler f z g))
-      (square-fillers (f , g .fst , sym (g .snd .fst)))
+      (square-fillers (f , hom-path g , sym (left-endpoint g)))
 
   isSegal≡isSegalRS : isSegal A ≡ isSegalRS A
   isSegal≡isSegalRS = hPropExt

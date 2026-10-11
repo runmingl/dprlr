@@ -13,11 +13,11 @@ private
     B : A → Type ℓB
     X : Type ℓX
 
-hom-happly :
+hom-funExt⁻ :
   {f g : (x : A) → B x}
   → f ≤ g
   → (x : A) → f x ≤ g x
-hom-happly h x = hom-map (λ f → f x) h
+hom-funExt⁻ h x = hom-map (λ f → f x) h
 
 hom-funExt :
   {f g : (x : A) → B x}
@@ -28,25 +28,25 @@ hom-funExt h =
   , funExt (λ x → left-endpoint (h x))
   , funExt (λ x → right-endpoint (h x))
 
-hom-happly-Iso :
+hom-funExt⁻-Iso :
   {f g : (x : A) → B x}
   → Iso (f ≤ g) ((x : A) → f x ≤ g x)
-Iso.fun hom-happly-Iso =
-  hom-happly
-Iso.inv hom-happly-Iso =
+Iso.fun hom-funExt⁻-Iso =
+  hom-funExt⁻
+Iso.inv hom-funExt⁻-Iso =
   hom-funExt
-Iso.rightInv hom-happly-Iso _ =
+Iso.rightInv hom-funExt⁻-Iso _ =
   refl
-Iso.leftInv hom-happly-Iso _ =
+Iso.leftInv hom-funExt⁻-Iso _ =
   refl
 
-hom-happly≃ :
+hom-funExt⁻≃ :
   {f g : (x : A) → B x}
   → (f ≤ g) ≃ ((x : A) → f x ≤ g x)
-hom-happly≃ =
-  isoToEquiv hom-happly-Iso
+hom-funExt⁻≃ =
+  isoToEquiv hom-funExt⁻-Iso
 
-HomPΠ-happly :
+HomPΠ-funExt⁻ :
   {P : A → X → Type ℓP}
   {x y : A}
   {h : x ≤ y}
@@ -54,7 +54,7 @@ HomPΠ-happly :
   {v : (i : X) → P y i}
   → (λ a → (i : X) → P a i) ⊢ u ≤[ h ] v
   → (i : X) → (λ a → P a i) ⊢ u i ≤[ h ] v i
-HomPΠ-happly q i =
+HomPΠ-funExt⁻ q i =
   (λ j → q .fst j i)
   , (λ j → q .snd .fst j i)
   , (λ j → q .snd .snd j i)

@@ -1,44 +1,28 @@
-module DPRLR.Gluing.LogicalRelations.Bool where
-
 open import Cubical.Foundations.Prelude
 open import Cubical.Data.Bool.Base renaming (Bool to Bool₂ ; true to true₂ ; false to false₂)
 open import Cubical.Data.Sigma
+open import Cubical.Data.Bool.Properties using (isSetBool)
+open import Cubical.Foundations.HLevels using (isSetΣ)
 
 open import DPRLR.Cubical.Path using (ΣPathP-subst)
 open import DPRLR.Simplicial.Product using (Σ≤)
 open import DPRLR.Simplicial.Hom
 open import DPRLR.Simplicial.Contravariant
 open import DPRLR.Simplicial.Discrete
-open import DPRLR.Object.Model.Model using (SimpleDirectedCwF)
+open import DPRLR.Simplicial.PreorderLocalization using (⌞_⌟)
+open import DPRLR.Object.Model.Model
 
-module _ {ℓS ℓM : Level} (𝓜 : SimpleDirectedCwF ℓS ℓM) where
+module DPRLR.Gluing.LogicalRelations.Bool
+  {ℓS ℓM : Level} (𝓜 : SimpleCwF ℓS ℓM) where
   open import DPRLR.Gluing.LogicalRelations.Judgment 𝓜
   open import DPRLR.Gluing.LogicalRelations.Substitution 𝓜
+  open import DPRLR.Gluing.Base 𝓜
 
-  open SimpleDirectedCwF 𝓜
-    renaming
-      ( Sub to Subₘ
-      ; Tm to Tmₘ
-      ; ε to εₘ
-      ; Bool to Boolₘ
-      ; true to trueₘ
-      ; false to falseₘ
-      ; if_then_else_ to ifₘ_then_else_
-      ; true[] to true[]ₘ
-      ; false[] to false[]ₘ
-      ; if[] to if[]ₘ
-      ; βif-true to βif-trueₘ
-      ; βif-false to βif-falseₘ
-      ; _[_]Tm to _[_]Tmₘ
-      ; tm-segal to tm-segalₘ
-      ; tm-thin to tm-thinₘ
-      )
-
-  ⌜_⌝ : Bool₂ → Tmₘ εₘ Boolₘ
+  ⌜_⌝ : Bool₂ → ⌞ Tmₘ εₘ Boolₘ ⌟
   ⌜ true₂ ⌝ = trueₘ
   ⌜ false₂ ⌝ = falseₘ
 
-  BOOL∙ : Tmₘ εₘ Boolₘ → Type ℓM
+  BOOL∙ : ⌞ Tmₘ εₘ Boolₘ ⌟ → Type ℓM
   BOOL∙ M =
     Σ Bool₂ (λ b → M ≤ ⌜ b ⌝)
 
@@ -51,11 +35,13 @@ module _ {ℓS ℓM : Level} (𝓜 : SimpleDirectedCwF ℓS ℓM) where
   BOOL : GluTy
   GluTy.A° BOOL = Boolₘ
   GluTy.A∙ BOOL = BOOL∙
+  GluTy.A∙-isSet BOOL M =
+    isSetΣ isSetBool λ b → isProp→isSet (tm-thinₘ εₘ Boolₘ M ⌜ b ⌝)
   GluTy.cA BOOL = BOOL-contravariant
 
   TRUE∙ :
     {Γ : GluCtx}
-    (γ° : Subₘ εₘ (GluCtx.Γ° Γ))
+    (γ° : ⌞ Subₘ εₘ (GluCtx.Γ° Γ) ⌟)
     (γ∙ : GluCtx.Γ∙ Γ γ°)
     → BOOL∙ (trueₘ [ γ° ]Tmₘ)
   TRUE∙ γ° _ =
@@ -63,7 +49,7 @@ module _ {ℓS ℓM : Level} (𝓜 : SimpleDirectedCwF ℓS ℓM) where
 
   FALSE∙ :
     {Γ : GluCtx}
-    (γ° : Subₘ εₘ (GluCtx.Γ° Γ))
+    (γ° : ⌞ Subₘ εₘ (GluCtx.Γ° Γ) ⌟)
     (γ∙ : GluCtx.Γ∙ Γ γ°)
     → BOOL∙ (falseₘ [ γ° ]Tmₘ)
   FALSE∙ γ° _ =

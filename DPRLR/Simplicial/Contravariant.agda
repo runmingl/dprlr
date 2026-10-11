@@ -197,7 +197,7 @@ contravariant-Π :
   → isContravariant (λ a → (x : X) → C a x)
 contravariant-Π {C = C} c .contrav-lift f v =
   isContrRetract
-    (λ { (u , q) x → u x , HomPΠ-happly {P = C} {h = f} q x })
+    (λ { (u , q) x → u x , HomPΠ-funExt⁻ {P = C} {h = f} q x })
     (λ w → (λ x → w x .fst) , HomPΠ {P = C} {h = f} (λ x → w x .snd))
     (λ { (u , q) → refl })
     (isContrΠ (λ x → contrav-lift (c x) f (v x)))

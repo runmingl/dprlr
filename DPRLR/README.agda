@@ -5,7 +5,7 @@ module DPRLR.README where
   presentation in the paper.
 
   The formalization is checked against Agda v2.8.0 with cubical library v0.9.
-  It covers the simply typed directed syntax via localization, unary gluing model, 
+  It covers the simply typed directed syntax via localization, unary gluing model,
   boolean canonicity theorem, and the basic binary contravariance lemma.
 -}
 
@@ -35,9 +35,9 @@ import DPRLR.Simplicial.Hom using
     Inequalities between functions are equivalent to pointwise inequalities.
 -}
 import DPRLR.Simplicial.Function using
-  ( hom-happly
+  ( hom-funExt⁻
   ; hom-funExt
-  ; hom-happly≃
+  ; hom-funExt⁻≃
   )
 
 {-
@@ -46,7 +46,7 @@ import DPRLR.Simplicial.Function using
     inequalities in the codomain.
 -}
 import DPRLR.Simplicial.Hom using
-  ( hom-map 
+  ( hom-map
   )
 
 {-
@@ -54,13 +54,11 @@ import DPRLR.Simplicial.Hom using
 -}
 {-
     Section 2.2.
-    A model is a simply typed CwF with booleans, products, functions, and
-    directed beta/eta reductions. In a directed model, substitution and term
-    types are both set, thin, and Segal.
+    A directed model is a simply typed CwF with booleans, products, functions, and
+    directed beta/eta reductions, where the substitution and term types are both preorders.
 -}
 import DPRLR.Object.Model.Model using
   ( SimpleCwF
-  ; SimpleDirectedCwF
   )
 
 {-
@@ -68,7 +66,7 @@ import DPRLR.Object.Model.Model using
     The raw directed HIT contains types, contexts, substitutions, terms, and
     the directed computation laws.
 -}
-import DPRLR.Object.Syntax.Raw.Base using
+import DPRLR.Object.Syntax.Raw using
   ( Ty
   ; Ctx
   ; Sub
@@ -108,14 +106,6 @@ import DPRLR.Object.Syntax.Raw.Base using
   ; η×
   ; β⇒
   ; η⇒
-  )
-
-{-
-    Section 2.2.
-    The raw constructors form a simply typed CwF before applying the reflector.
--}
-import DPRLR.Object.Syntax.Raw.Model using
-  ( RawSyntaxCwF
   )
 
 {-
@@ -159,10 +149,10 @@ import DPRLR.Simplicial.PreorderLocalization using
   ( Fᴾ
   ; ∥_∥ᴾ
   ; ηᴾ
-  ; rec
-  ; rec-unique
+  ; recᴾ
+  ; recᴾ-unique
   ; ηᴾ-universal
-  ; isPreorderP
+  ; ∥∥ᴾ-isPreorder
   ; isPreorder→isSet
   ; isPreorder→isThin
   ; isPreorder→isSegal
@@ -171,27 +161,22 @@ import DPRLR.Simplicial.PreorderLocalization using
 
 {-
     Section 2.2.2, Section 2.2.3, and Appendix A.
-    Raw substitutions and terms are reflected into the set, thin, Segal
-    subuniverse.
+    Raw substitutions and terms are reflected into the subuniverse of synthetic preorders.
 -}
-import DPRLR.Object.Syntax.Localized.Base using
+import DPRLR.Object.Syntax.Base using
   ( Subᴾ
   ; Tmᴾ
   ; ηSubᴾ
   ; ηTmᴾ
-  ; Subᴾ-isSet
-  ; Subᴾ-isThin
-  ; Subᴾ-isSegal
-  ; Tmᴾ-isSet
-  ; Tmᴾ-isThin
-  ; Tmᴾ-isSegal
+  ; Subᴾ-isPreorder
+  ; Tmᴾ-isPreorder
   )
 
 {-
     Section 2.2.
     The reflected syntax inherits all CwF operations and directed computation laws.
 -}
-import DPRLR.Object.Syntax.Localized.Base using
+import DPRLR.Object.Syntax.Base using
   ( idᴾ
   ; _∘ᴾ_
   ; ε-subᴾ
@@ -226,11 +211,10 @@ import DPRLR.Object.Syntax.Localized.Base using
 
 {-
     Section 2.2.
-    The localized syntax is packaged as the directed syntactic model.
+    The (localized) syntax is packaged as the directed syntactic model.
 -}
-import DPRLR.Object.Syntax.Localized.Model using
-  ( LocalizedSyntaxCwF
-  ; LocalizedSyntaxModel
+import DPRLR.Object.Syntax.Model using
+  ( SyntaxModel
   )
 
 import DPRLR.Object.Model.Morphism.Base using
@@ -238,12 +222,8 @@ import DPRLR.Object.Model.Morphism.Base using
   ; isInitialDirected
   )
 
-import DPRLR.Object.Syntax.Initiality.Raw using
-  ( raw-syntax-isInitial
-  )
-
-import DPRLR.Object.Syntax.Initiality.Localized using
-  ( localized-syntax-isInitial
+import DPRLR.Object.Syntax.Initiality using
+  ( syntax-isInitial
   )
 
 {-
@@ -313,11 +293,11 @@ import DPRLR.Simplicial.Contravariant using
     Example 4.2
     Discrete types identify inequalities with ordinary paths.
     Note that Bool₂-isDiscrete is a postulate because it is an axiom
-    in simplicial type theory, e.g. 
-    - Axiom 7 in Daniel Gratzer, Jonathan Weinberger, and Ulrik Buchholtz. 2026. 
+    in simplicial type theory, e.g.
+    - Axiom 7 in Daniel Gratzer, Jonathan Weinberger, and Ulrik Buchholtz. 2026.
         Directed univalence in simplicial homotopy type theory.
-    - Axiom 4 in Daniel Gratzer, Jonathan Weinberger, and Ulrik Buchholtz. 2026. 
-        The ∞-category of ∞-categories in simplicial type theory. 
+    - Axiom 4 in Daniel Gratzer, Jonathan Weinberger, and Ulrik Buchholtz. 2026.
+        The ∞-category of ∞-categories in simplicial type theory.
 -}
 import DPRLR.Simplicial.Discrete using
   ( isDiscrete
@@ -440,24 +420,6 @@ import DPRLR.Gluing.GluingModel using
 
 {-
     Section 3.4.
-    The gluing model is repackaged as a displayed model over the syntax.
--}
-import DPRLR.Gluing.DisplayedModel using
-  ( CTX
-  ; TY
-  ; SUB
-  ; TM
-  ; BOOLᴰ
-  ; PRODᴰ
-  ; FUNᴰ
-  ; GluingDisplayed
-  ; GluingDisplayedDirected
-  ; GluingDirectedModel
-  )
-
-{-
-    Section 3.4.
-    The fundamental theorem is the displayed section obtained from the syntax eliminator.
 -}
 import DPRLR.Gluing.FTLR using
   ( ftlr-section
