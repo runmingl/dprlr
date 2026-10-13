@@ -9,6 +9,7 @@ open import Cubical.Foundations.HLevels
 open import Cubical.Foundations.Isomorphism
 open import Cubical.Foundations.Path
 open import Cubical.Data.Sigma
+open import Cubical.Data.Unit using (Unit* ; tt*)
 
 open import DPRLR.Simplicial.Hom
 open import DPRLR.Simplicial.Discrete
@@ -28,40 +29,40 @@ private
 -- RS17, Definition 8.2.
 record isContravariant {A : Type ℓ} (C : A → Type ℓ') : Type (ℓ-max ℓ ℓ') where
   field
-    contrav-lift :
+    contravariant-lift :
       {x y : A} (f : x ≤ y) (v : C y)
       → isContr (Σ (C x) (λ u → C ⊢ u ≤[ f ] v))
 
 open isContravariant public
 
 -- RS17, Section 8.2.
-contrav-transport :
+contravariant-transport :
   {C : A → Type ℓ'} → isContravariant C
   → {x y : A} → x ≤ y → C y → C x
-contrav-transport c f v = contrav-lift c f v .fst .fst
+contravariant-transport c f v = contravariant-lift c f v .fst .fst
 
 contravariant-lift-hom :
   {C : A → Type ℓ'} (c : isContravariant C)
   → {x y : A} (f : x ≤ y) (v : C y)
-  → C ⊢ contrav-transport c f v ≤[ f ] v
-contravariant-lift-hom c f v = contrav-lift c f v .fst .snd
+  → C ⊢ contravariant-transport c f v ≤[ f ] v
+contravariant-lift-hom c f v = contravariant-lift c f v .fst .snd
 
 contravariant-universal-to :
   {C : A → Type ℓ'} (c : isContravariant C)
   → {x y : A} {f : x ≤ y} {u : C x} {v : C y}
   → C ⊢ u ≤[ f ] v
-  → u ≡ contrav-transport c f v
+  → u ≡ contravariant-transport c f v
 contravariant-universal-to c {f = f} {u = u} {v = v} q =
   cong fst
     (isContr→isProp
-      (contrav-lift c f v)
+      (contravariant-lift c f v)
       (u , q)
-      (contrav-lift c f v .fst))
+      (contravariant-lift c f v .fst))
 
 contravariant-universal-from :
   {C : A → Type ℓ'} (c : isContravariant C)
   → {x y : A} {f : x ≤ y} {u : C x} {v : C y}
-  → u ≡ contrav-transport c f v
+  → u ≡ contravariant-transport c f v
   → C ⊢ u ≤[ f ] v
 contravariant-universal-from c {f = f} {v = v} u≡f*v =
   subst (λ u → _ ⊢ u ≤[ f ] v) (sym u≡f*v)
@@ -71,25 +72,25 @@ contravariant-universal-from c {f = f} {v = v} u≡f*v =
 contravariant-universal≃ :
   {C : A → Type ℓ'} (c : isContravariant C)
   → {x y : A} {f : x ≤ y} {u : C x} {v : C y}
-  → (C ⊢ u ≤[ f ] v) ≃ (u ≡ contrav-transport c f v)
+  → (C ⊢ u ≤[ f ] v) ≃ (u ≡ contravariant-transport c f v)
 contravariant-universal≃ {C = C} c {x = x} {f = f} {u = u} {v = v} =
   contravariant-universal-to c
-  , fiberEquiv (λ u → C ⊢ u ≤[ f ] v) (λ u → u ≡ contrav-transport c f v)
+  , fiberEquiv (λ u → C ⊢ u ≤[ f ] v) (λ u → u ≡ contravariant-transport c f v)
       (λ _ → contravariant-universal-to c) total-isEquiv u
   where
   total-isEquiv :
     isEquiv (λ (w : Σ (C x) (λ u → C ⊢ u ≤[ f ] v)) →
       w .fst , contravariant-universal-to c (w .snd))
   total-isEquiv =
-    isEquivFromIsContr _ (contrav-lift c f v)
+    isEquivFromIsContr _ (contravariant-lift c f v)
       (isContrRetract (map-snd sym) (map-snd sym) (λ _ → refl)
-        (isContrSingl (contrav-transport c f v)))
+        (isContrSingl (contravariant-transport c f v)))
 
 -- RS17, Proposition 8.16.
 contravariant-transport-refl :
   {C : A → Type ℓ'} (c : isContravariant C)
   → {x : A} (v : C x)
-  → contrav-transport c (hom-refl x) v ≡ v
+  → contravariant-transport c (hom-refl x) v ≡ v
 contravariant-transport-refl c {x = x} v =
   sym
     (contravariant-universal-to c
@@ -100,23 +101,23 @@ contravariant-transport-refl c {x = x} v =
 contravariant-transport-compose :
   {C : A → Type ℓ'} (c : isContravariant C) (S : isSegal A)
   → {x y z : A} (f : x ≤ y) (g : y ≤ z) (v : C z)
-  → contrav-transport c (segal-compose S f g) v
-    ≡ contrav-transport c f (contrav-transport c g v)
+  → contravariant-transport c (segal-compose S f g) v
+    ≡ contravariant-transport c f (contravariant-transport c g v)
 contravariant-transport-compose c S f g v =
   let q = segal-compose-witness S f g in
   contravariant-universal-to c
-    ((λ i → contrav-transport c (q .fst i) v)
-    , (λ i → contrav-transport c (q .snd .fst i) v)
-    , (λ i → contrav-transport c (q .snd .snd i) v))
+    ((λ i → contravariant-transport c (q .fst i) v)
+    , (λ i → contravariant-transport c (q .snd .fst i) v)
+    , (λ i → contravariant-transport c (q .snd .snd i) v))
 
 contravariant-transport-cong :
   {C : A → Type ℓ'} (c : isContravariant C) → isThin A
   → {x x' y y' : A} (p : x ≡ x') (q : y ≡ y')
   → (f : x ≤ y) (g : x' ≤ y')
   → {v : C y} {v' : C y'} → PathP (λ i → C (q i)) v v'
-  → PathP (λ i → C (p i)) (contrav-transport c f v) (contrav-transport c g v')
+  → PathP (λ i → C (p i)) (contravariant-transport c f v) (contravariant-transport c g v')
 contravariant-transport-cong c thin p q f g v i =
-  contrav-transport c (isProp→PathP (λ j → thin (p j) (q j)) f g i) (v i)
+  contravariant-transport c (isProp→PathP (λ j → thin (p j) (q j)) f g i) (v i)
 
 -- RS17, Proposition 8.18.
 contravariant-fiber-isDiscrete :
@@ -131,7 +132,7 @@ contravariant-fiber-isDiscrete {C = C} c x u v =
   total-isEquiv =
     isEquivFromIsContr _
       (isContrRetract (map-snd sym) (map-snd sym) (λ _ → refl) (isContrSingl v))
-      (contrav-lift c (hom-refl x) v)
+      (contravariant-lift c (hom-refl x) v)
 
 -- RS17, Remark 8.3.
 contravariant-reindex :
@@ -139,22 +140,28 @@ contravariant-reindex :
   → (g : A → B)
   → isContravariant C
   → isContravariant (C ∘ g)
-contravariant-reindex g c .contrav-lift f v =
-  contrav-lift c (hom-map g f) v
+contravariant-reindex g c .contravariant-lift f v =
+  contravariant-lift c (hom-map g f) v
 
 contravariant-discrete :
   {A : Type ℓ} {B : Type ℓ'}
   → isDiscrete B
   → isContravariant (λ (_ : A) → B)
-contravariant-discrete d .contrav-lift f v =
+contravariant-discrete d .contravariant-lift f v =
   hom-to-isContr d v
+
+contravariant-Unit :
+  {A : Type ℓ}
+  → isContravariant (λ (_ : A) → Unit* {ℓ'})
+contravariant-Unit .contravariant-lift _ _ =
+  (tt* , (λ _ → tt*) , refl , refl) , (λ _ → refl)
 
 contravariant-Σ :
   {C : A → Type ℓ'} {D : (a : A) → C a → Type ℓ''}
   → isContravariant C
   → isContravariant (λ au → D (fst au) (snd au))
   → isContravariant (λ a → Σ (C a) (D a))
-contravariant-Σ {C = C} {D = D} c d .contrav-lift f (vC , vD) =
+contravariant-Σ {C = C} {D = D} c d .contravariant-lift f (vC , vD) =
   isContrRetract
     (λ { ((uC , uD) , q) →
       (uC , HomPΣ-fst {C = C} {D = D} {f = f} q)
@@ -162,8 +169,8 @@ contravariant-Σ {C = C} {D = D} c d .contrav-lift f (vC , vD) =
     (λ { ((uC , p) , (uD , q)) →
       (uC , uD) , HomPΣ {C = C} {D = D} {f = f} p q })
     (λ { ((uC , uD) , q) → refl })
-    (isContrΣ (contrav-lift c f vC)
-      (λ uh → contrav-lift d (Σ≤ f (snd uh)) vD))
+    (isContrΣ (contravariant-lift c f vC)
+      (λ uh → contravariant-lift d (Σ≤ f (snd uh)) vD))
 
 contravariant-Σ-discrete :
   {B : Type ℓ''} {C : B → A → Type ℓ'}
@@ -174,14 +181,14 @@ contravariant-Σ-discrete {C = C} d c =
   contravariant-Σ (contravariant-discrete d) indexed-contravariant
   where
   indexed-contravariant : isContravariant (λ ab → C (snd ab) (fst ab))
-  indexed-contravariant .contrav-lift {x = x , b₀} {y = y , b₁} r v =
+  indexed-contravariant .contravariant-lift {x = x , b₀} {y = y , b₁} r v =
     subst
       (λ bh → isContr (Σ (C (fst bh) x) (λ u →
         (λ ab → C (snd ab) (fst ab))
           ⊢ u ≤[ Σ≤ (hom-map fst r) (snd bh) ] v)))
       (isContr→isProp (hom-to-isContr d b₁)
         (b₁ , hom-refl b₁) (b₀ , hom-map snd r))
-      (contrav-lift (c b₁) (hom-map fst r) v)
+      (contravariant-lift (c b₁) (hom-map fst r) v)
 
 contravariant-× :
   {C : A → Type ℓ'} {D : A → Type ℓ''}
@@ -196,12 +203,12 @@ contravariant-Π :
   {A : Type ℓ} {X : Type ℓ'} {C : A → X → Type ℓ''}
   → ((x : X) → isContravariant (λ a → C a x))
   → isContravariant (λ a → (x : X) → C a x)
-contravariant-Π {C = C} c .contrav-lift f v =
+contravariant-Π {C = C} c .contravariant-lift f v =
   isContrRetract
     (λ { (u , q) x → u x , HomPΠ-funExt⁻ {P = C} {h = f} q x })
     (λ w → (λ x → w x .fst) , HomPΠ {P = C} {h = f} (λ x → w x .snd))
     (λ { (u , q) → refl })
-    (isContrΠ (λ x → contrav-lift (c x) f (v x)))
+    (isContrΠ (λ x → contravariant-lift (c x) f (v x)))
 
 -- RS17, Proposition 8.13.
 representable-isContravariant :
@@ -209,7 +216,7 @@ representable-isContravariant :
   → isSegal A
   → (a : A)
   → isContravariant (λ x → x ≤ a)
-representable-isContravariant S a .contrav-lift f v =
+representable-isContravariant S a .contravariant-lift f v =
   S f v
 
 -- RS17, Theorem 8.8.
@@ -219,7 +226,7 @@ contravariant-total-isSegal :
 contravariant-total-isSegal {A = A} {C = C} S c
   {x = x , u} {y = y , w} {z = z , v} f g =
   isOfHLevelRespectEquiv 0
-    (Σ-contractFst (chosen , isContr→isProp (contrav-lift c h w) chosen))
+    (Σ-contractFst (chosen , isContr→isProp (contravariant-lift c h w) chosen))
     lifted-composites
   where
   h : x ≤ y
@@ -234,7 +241,7 @@ contravariant-total-isSegal {A = A} {C = C} S c
       (λ { (u₀ , k) → hom-map fst k , u₀ , snd (Iso.fun HomΣ-Iso k) })
       (λ { (k , u₀ , q) → u₀ , Σ≤ k q })
       (λ _ → refl) (λ _ → refl)))
-    (Σ-contractSnd (λ k → contrav-lift c k v))
+    (Σ-contractSnd (λ k → contravariant-lift c k v))
 
   lifted-composites : isContr
     (Σ (Σ (C x) (λ u₀ → C ⊢ u₀ ≤[ h ] w))
@@ -265,7 +272,7 @@ contravariant-total-isThin {C = C} thin c Cset (x , u) (y , v) =
   hom-isProp h =
     isOfHLevelRespectEquiv 1
       (invEquiv (contravariant-universal≃ c {f = h}))
-      (Cset x u (contrav-transport c h v))
+      (Cset x u (contravariant-transport c h v))
 
 contravariant-total-isPreorder :
   {ℓ ℓ' : Level} {A : Type ℓ} {C : A → Type ℓ'}

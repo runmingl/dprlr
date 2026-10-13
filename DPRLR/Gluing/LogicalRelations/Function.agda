@@ -82,7 +82,7 @@ module DPRLR.Gluing.LogicalRelations.Function
     → GluTm (Γ ▷ᵍ A) B → GluTm Γ (FUN A B)
   GluTm.M° (LAM N) = lamₘ (GluTm.M° N)
   GluTm.M∙ (LAM {Γ = Γ} {A = A} {B = B} N) γ γ∙ m m∙ =
-    contrav-transport (GluTy.cA B) (β⇒-substₘ (GluTm.M° N) γ m)
+    contravariant-transport (GluTy.cA B) (β⇒-substₘ (GluTm.M° N) γ m)
       (snd (N [ ⟨_,_⟩₀ {Γ = Γ} {A = A} (γ , γ∙) (m , m∙) ]Tm₀))
 
   LAM[] : {Γ Δ : GluCtx} {A B : GluTy}
@@ -187,7 +187,7 @@ module DPRLR.Gluing.LogicalRelations.Function
     pointwise : (γ : ⌞ Subₘ εₘ (GluCtx.Γ° Γ) ⌟) (γ∙ : ⌞ GluCtx.Γ∙ Γ γ ⌟)
       (m : ⌞ Tmₘ εₘ (GluTy.A° A) ⌟) (m∙ : ⌞ GluTy.A∙ A m ⌟)
       → GluTm.M∙ (LAM {Γ = Γ} {A = A} {B = B} (FUNη-body {A = A} {B = B} F)) γ γ∙ m m∙
-        ≡ contrav-transport (GluTy.cA B)
+        ≡ contravariant-transport (GluTy.cA B)
             (hom-map (λ f → appₘ (f [ γ ]Tmₘ) m) (η⇒ₘ (GluTm.M° F)))
             (GluTm.M∙ F γ γ∙ m m∙)
     pointwise γ γ∙ m m∙ =

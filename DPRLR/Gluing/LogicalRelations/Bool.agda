@@ -113,7 +113,7 @@ module DPRLR.Gluing.LogicalRelations.Bool
   IF₀ : (A : GluTy)
     → GluTm₀ BOOL → GluTm₀ A → GluTm₀ A → GluTm₀ A
   IF₀ A (b , b∙) (t , t∙) (f , f∙) .fst = ifₘ b then t else f
-  IF₀ A (b , true₂ , h) (t , t∙) (f , f∙) .snd = contrav-transport (GluTy.cA A)
+  IF₀ A (b , true₂ , h) (t , t∙) (f , f∙) .snd = contravariant-transport (GluTy.cA A)
     (
         ifₘ b then t else f
       ≤⟨ hom-map (λ b → ifₘ b then t else f) h ⟩
@@ -121,7 +121,7 @@ module DPRLR.Gluing.LogicalRelations.Bool
       ≤⟨ βif-trueₘ t f ⟩
         t
       ∎≤) t∙
-  IF₀ A (b , false₂ , h) (t , t∙) (f , f∙) .snd = contrav-transport (GluTy.cA A)
+  IF₀ A (b , false₂ , h) (t , t∙) (f , f∙) .snd = contravariant-transport (GluTy.cA A)
     (
         ifₘ b then t else f
       ≤⟨ hom-map (λ b → ifₘ b then t else f) h ⟩

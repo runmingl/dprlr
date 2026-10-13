@@ -85,7 +85,7 @@ import DPRLR.Gluing.LogicalRelations.Product using
 import DPRLR.Simplicial.Contravariant using (isContravariant)
 
 {- Definition 3.2 — Contravariant transport. -}
-import DPRLR.Simplicial.Contravariant using (contrav-transport)
+import DPRLR.Simplicial.Contravariant using (contravariant-transport)
 
 {- Lemma 3.3 — Functoriality of contravariant transport. -}
 import DPRLR.Simplicial.Contravariant using

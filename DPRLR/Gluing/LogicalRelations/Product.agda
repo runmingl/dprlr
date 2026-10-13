@@ -79,12 +79,12 @@ module DPRLR.Gluing.LogicalRelations.Product
     → GluTm Γ (PROD A B)
   GluTm.M° (PAIR M N) = pairₘ (GluTm.M° M) (GluTm.M° N)
   GluTm.M∙ (PAIR {A = A} {B = B} M N) γ° γ∙ =
-    contrav-transport
+    contravariant-transport
       (GluTy.cA A)
       (β×₁[] A B M N γ°)
       (GluTm.M∙ M γ° γ∙)
     ,
-    contrav-transport
+    contravariant-transport
       (GluTy.cA B)
       (β×₂[] A B M N γ°)
       (GluTm.M∙ N γ° γ∙)
@@ -121,8 +121,8 @@ module DPRLR.Gluing.LogicalRelations.Product
 
   PAIR₀ : (A B : GluTy) → GluTm₀ A → GluTm₀ B → GluTm₀ (PROD A B)
   PAIR₀ A B (m , m∙) (n , n∙) = pairₘ m n
-    , contrav-transport (GluTy.cA A) (β×₁ₘ m n) m∙
-    , contrav-transport (GluTy.cA B) (β×₂ₘ m n) n∙
+    , contravariant-transport (GluTy.cA A) (β×₁ₘ m n) m∙
+    , contravariant-transport (GluTy.cA B) (β×₂ₘ m n) n∙
 
   FST[]₀ : {Γ : GluCtx} {A B : GluTy}
     (P : GluTm Γ (PROD A B)) (γ : GluSub₀ Γ)
@@ -211,10 +211,10 @@ module DPRLR.Gluing.LogicalRelations.Product
   PAIR₀-η A B (p , a , b) = Σ≤ (η×ₘ p)
     (HomP× {C = λ p → ⌞ GluTy.A∙ A (fstₘ p) ⌟} {D = λ p → ⌞ GluTy.A∙ B (sndₘ p) ⌟}
       (contravariant-universal-from (contravariant-reindex fstₘ (GluTy.cA A))
-        (cong (λ h → contrav-transport (GluTy.cA A) h a)
+        (cong (λ h → contravariant-transport (GluTy.cA A) h a)
           (tm-thinₘ εₘ (GluTy.A° A) _ _ (β×₁ₘ (fstₘ p) (sndₘ p)) (hom-map fstₘ (η×ₘ p)))))
       (contravariant-universal-from (contravariant-reindex sndₘ (GluTy.cA B))
-        (cong (λ h → contrav-transport (GluTy.cA B) h b)
+        (cong (λ h → contravariant-transport (GluTy.cA B) h b)
           (tm-thinₘ εₘ (GluTy.A° B) _ _ (β×₂ₘ (fstₘ p) (sndₘ p)) (hom-map sndₘ (η×ₘ p))))))
 
   PROD-preserves-β₁ : {Γ : GluCtx} {A B : GluTy}

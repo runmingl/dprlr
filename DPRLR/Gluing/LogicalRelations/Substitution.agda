@@ -13,7 +13,7 @@ open import Cubical.Foundations.HLevels using (isSetΣ)
 
 open import DPRLR.Simplicial.PreorderLocalization using (⌞_⌟)
 open import DPRLR.Simplicial.Contravariant
-  using (contrav-lift ; contravariant-reindex ; contravariant-×)
+  using (contravariant-Unit ; contravariant-reindex ; contravariant-×)
 open import DPRLR.Object.Model.Model using (SimpleCwF)
 open import DPRLR.Cubical.Path using (ΣPathP-subst ; ΣPath→PathP)
 
@@ -27,8 +27,7 @@ module DPRLR.Gluing.LogicalRelations.Substitution
   εᵍ : GluCtx
   GluCtx.Γ° εᵍ = εₘ
   GluCtx.Γ∙ εᵍ _ = Unit* , isSetUnit*
-  contrav-lift (GluCtx.cΓ εᵍ) _ _ =
-    (tt* , (λ _ → tt*) , refl , refl) , (λ _ → refl)
+  GluCtx.cΓ εᵍ = contravariant-Unit
 
   ε-subᵍ : {Γ : GluCtx} → GluSub Γ εᵍ
   GluSub.σ° ε-subᵍ = ε-subₘ

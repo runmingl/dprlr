@@ -18,7 +18,6 @@ import DPRLR.Object.Model.Model
 import DPRLR.Object.Model.Morphism.Base
 import DPRLR.Object.Model.Morphism.Properties
 
-import DPRLR.Object.Syntax
 import DPRLR.Object.Syntax.Raw
 import DPRLR.Object.Syntax.Localized
 import DPRLR.Object.Syntax.Model

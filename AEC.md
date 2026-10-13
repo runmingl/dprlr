@@ -139,7 +139,7 @@ Each group corresponds to one Agda logo in the paper, in the same order as the i
 |  | $\mathsf{SND}$ | [`SND`](DPRLR/Gluing/LogicalRelations/Product.agda) |  |
 |  | substitution laws for $\mathsf{FST},\mathsf{SND}$ | [`FST[]`, `SND[]`](DPRLR/Gluing/LogicalRelations/Product.agda) |  |
 | **Definition 3.1 — Contravariant families** | $\mathrm{isContrav}(C)$ | [`isContravariant`](DPRLR/Simplicial/Contravariant.agda) |  |
-| **Definition 3.2 — Contravariant transport** | $f^*v$ | [`contrav-transport`](DPRLR/Simplicial/Contravariant.agda) |  |
+| **Definition 3.2 — Contravariant transport** | $f^*v$ | [`contravariant-transport`](DPRLR/Simplicial/Contravariant.agda) |  |
 | **Lemma 3.3 — Functoriality of contravariant transport** | $(\mathrm{id}_x)^*v=v$ | [`contravariant-transport-refl`](DPRLR/Simplicial/Contravariant.agda) |  |
 |  | $(f\cdot g)^*w=f^*(g^*w)$ | [`contravariant-transport-compose`](DPRLR/Simplicial/Contravariant.agda) |  |
 | **Lemma 3.4 — Universal property of contravariant transport** | $(u \leq_{C(f)} v) \simeq (u=f^*v)$ | [`contravariant-universal≃`](DPRLR/Simplicial/Contravariant.agda) |  |
