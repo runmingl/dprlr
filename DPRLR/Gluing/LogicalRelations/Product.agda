@@ -1,4 +1,5 @@
 open import Cubical.Foundations.Prelude
+open import Cubical.Foundations.Structure using (str)
 open import Cubical.Data.Sigma
 open import Cubical.Foundations.HLevels using (isSet×)
 
@@ -20,9 +21,9 @@ module DPRLR.Gluing.LogicalRelations.Product
     → ⌞ Tmₘ εₘ (GluTy.A° A ×ₘ GluTy.A° B) ⌟
     → Type ℓM
   PROD∙ A B P =
-    GluTy.A∙ A (fstₘ P)
+    ⌞ GluTy.A∙ A (fstₘ P) ⌟
     ×
-    GluTy.A∙ B (sndₘ P)
+    ⌞ GluTy.A∙ B (sndₘ P) ⌟
 
   PROD-contravariant :
     (A B : GluTy)
@@ -36,9 +37,8 @@ module DPRLR.Gluing.LogicalRelations.Product
     (A B : GluTy)
     → GluTy
   GluTy.A° (PROD A B) = GluTy.A° A ×ₘ GluTy.A° B
-  GluTy.A∙ (PROD A B) = PROD∙ A B
-  GluTy.A∙-isSet (PROD A B) P =
-    isSet× (GluTy.A∙-isSet A (fstₘ P)) (GluTy.A∙-isSet B (sndₘ P))
+  GluTy.A∙ (PROD A B) P = PROD∙ A B P ,
+    isSet× (str (GluTy.A∙ A (fstₘ P))) (str (GluTy.A∙ B (sndₘ P)))
   GluTy.cA (PROD A B) = PROD-contravariant A B
 
   β×₁[] :
@@ -97,7 +97,7 @@ module DPRLR.Gluing.LogicalRelations.Product
   GluTm.M° (FST M) = fstₘ (GluTm.M° M)
   GluTm.M∙ (FST {A = A} M) γ° γ∙ =
     subst
-      (GluTy.A∙ A)
+      (λ x → ⌞ GluTy.A∙ A x ⌟)
       (sym (fst[]ₘ (GluTm.M° M) γ°))
       (fst (GluTm.M∙ M γ° γ∙))
 
@@ -109,7 +109,7 @@ module DPRLR.Gluing.LogicalRelations.Product
   GluTm.M° (SND M) = sndₘ (GluTm.M° M)
   GluTm.M∙ (SND {B = B} M) γ° γ∙ =
     subst
-      (GluTy.A∙ B)
+      (λ x → ⌞ GluTy.A∙ B x ⌟)
       (sym (snd[]ₘ (GluTm.M° M) γ°))
       (snd (GluTm.M∙ M γ° γ∙))
 
@@ -128,13 +128,13 @@ module DPRLR.Gluing.LogicalRelations.Product
     (P : GluTm Γ (PROD A B)) (γ : GluSub₀ Γ)
     → (FST {A = A} {B = B} P) [ γ ]Tm₀ ≡ FST₀ A B (P [ γ ]Tm₀)
   FST[]₀ {A = A} P (γ , γ∙) = sym
-    (ΣPathP-subst (GluTy.A∙ A) (sym (fst[]ₘ (GluTm.M° P) γ)) (fst (GluTm.M∙ P γ γ∙)))
+    (ΣPathP-subst (λ x → ⌞ GluTy.A∙ A x ⌟) (sym (fst[]ₘ (GluTm.M° P) γ)) (fst (GluTm.M∙ P γ γ∙)))
 
   SND[]₀ : {Γ : GluCtx} {A B : GluTy}
     (P : GluTm Γ (PROD A B)) (γ : GluSub₀ Γ)
     → (SND {A = A} {B = B} P) [ γ ]Tm₀ ≡ SND₀ A B (P [ γ ]Tm₀)
   SND[]₀ {B = B} P (γ , γ∙) = sym
-    (ΣPathP-subst (GluTy.A∙ B) (sym (snd[]ₘ (GluTm.M° P) γ)) (snd (GluTm.M∙ P γ γ∙)))
+    (ΣPathP-subst (λ x → ⌞ GluTy.A∙ B x ⌟) (sym (snd[]ₘ (GluTm.M° P) γ)) (snd (GluTm.M∙ P γ γ∙)))
 
   PAIR[]₀ : {Γ : GluCtx} {A B : GluTy}
     (M : GluTm Γ A) (N : GluTm Γ B) (γ : GluSub₀ Γ)
@@ -209,7 +209,7 @@ module DPRLR.Gluing.LogicalRelations.Product
   PAIR₀-η : (A B : GluTy) (p : GluTm₀ (PROD A B))
     → PAIR₀ A B (FST₀ A B p) (SND₀ A B p) ≤ p
   PAIR₀-η A B (p , a , b) = Σ≤ (η×ₘ p)
-    (HomP× {C = λ p → GluTy.A∙ A (fstₘ p)} {D = λ p → GluTy.A∙ B (sndₘ p)}
+    (HomP× {C = λ p → ⌞ GluTy.A∙ A (fstₘ p) ⌟} {D = λ p → ⌞ GluTy.A∙ B (sndₘ p) ⌟}
       (contravariant-universal-from (contravariant-reindex fstₘ (GluTy.cA A))
         (cong (λ h → contrav-transport (GluTy.cA A) h a)
           (tm-thinₘ εₘ (GluTy.A° A) _ _ (β×₁ₘ (fstₘ p) (sndₘ p)) (hom-map fstₘ (η×ₘ p)))))

@@ -34,15 +34,14 @@ module DPRLR.Gluing.LogicalRelations.Bool
 
   BOOL : GluTy
   GluTy.A° BOOL = Boolₘ
-  GluTy.A∙ BOOL = BOOL∙
-  GluTy.A∙-isSet BOOL M =
+  GluTy.A∙ BOOL M = BOOL∙ M ,
     isSetΣ isSetBool λ b → isProp→isSet (tm-thinₘ εₘ Boolₘ M ⌜ b ⌝)
   GluTy.cA BOOL = BOOL-contravariant
 
   TRUE∙ :
     {Γ : GluCtx}
     (γ° : ⌞ Subₘ εₘ (GluCtx.Γ° Γ) ⌟)
-    (γ∙ : GluCtx.Γ∙ Γ γ°)
+    (γ∙ : ⌞ GluCtx.Γ∙ Γ γ° ⌟)
     → BOOL∙ (trueₘ [ γ° ]Tmₘ)
   TRUE∙ γ° _ =
     true₂ , path→hom (true[]ₘ γ°)
@@ -50,7 +49,7 @@ module DPRLR.Gluing.LogicalRelations.Bool
   FALSE∙ :
     {Γ : GluCtx}
     (γ° : ⌞ Subₘ εₘ (GluCtx.Γ° Γ) ⌟)
-    (γ∙ : GluCtx.Γ∙ Γ γ°)
+    (γ∙ : ⌞ GluCtx.Γ∙ Γ γ° ⌟)
     → BOOL∙ (falseₘ [ γ° ]Tmₘ)
   FALSE∙ γ° _ =
     false₂ , path→hom (false[]ₘ γ°)
@@ -135,7 +134,7 @@ module DPRLR.Gluing.LogicalRelations.Bool
     → GluTm Γ BOOL → GluTm Γ A → GluTm Γ A → GluTm Γ A
   GluTm.M° (IF B T F) = ifₘ GluTm.M° B then GluTm.M° T else GluTm.M° F
   GluTm.M∙ (IF {A = A} B T F) γ γ∙ =
-    subst (GluTy.A∙ A) (sym (if[]ₘ (GluTm.M° B) (GluTm.M° T) (GluTm.M° F) γ))
+    subst (λ x → ⌞ GluTy.A∙ A x ⌟) (sym (if[]ₘ (GluTm.M° B) (GluTm.M° T) (GluTm.M° F) γ))
       (snd (IF₀ A (B [ γ , γ∙ ]Tm₀) (T [ γ , γ∙ ]Tm₀) (F [ γ , γ∙ ]Tm₀)))
 
   IF[]₀ : {Γ : GluCtx} {A : GluTy}
@@ -143,7 +142,7 @@ module DPRLR.Gluing.LogicalRelations.Bool
     → (IF B T F) [ γ ]Tm₀
       ≡ IF₀ A (B [ γ ]Tm₀) (T [ γ ]Tm₀) (F [ γ ]Tm₀)
   IF[]₀ {A = A} B T F (γ , γ∙) = sym
-    (ΣPathP-subst (GluTy.A∙ A) (sym (if[]ₘ (GluTm.M° B) (GluTm.M° T) (GluTm.M° F) γ))
+    (ΣPathP-subst (λ x → ⌞ GluTy.A∙ A x ⌟) (sym (if[]ₘ (GluTm.M° B) (GluTm.M° T) (GluTm.M° F) γ))
       (snd (IF₀ A (B [ γ , γ∙ ]Tm₀) (T [ γ , γ∙ ]Tm₀) (F [ γ , γ∙ ]Tm₀))))
 
   IF[] : {Γ Δ : GluCtx} {A : GluTy}

@@ -6,10 +6,12 @@
 --   pointwise.
 
 open import Cubical.Foundations.Prelude
+open import Cubical.Foundations.Structure using (str)
 open import Cubical.Data.Sigma
 open import Cubical.Data.Unit
 open import Cubical.Foundations.HLevels using (isSetΣ)
 
+open import DPRLR.Simplicial.PreorderLocalization using (⌞_⌟)
 open import DPRLR.Simplicial.Contravariant
   using (contrav-lift ; contravariant-reindex ; contravariant-×)
 open import DPRLR.Object.Model.Model using (SimpleCwF)
@@ -24,8 +26,7 @@ module DPRLR.Gluing.LogicalRelations.Substitution
 
   εᵍ : GluCtx
   GluCtx.Γ° εᵍ = εₘ
-  GluCtx.Γ∙ εᵍ _ = Unit*
-  GluCtx.Γ∙-isSet εᵍ _ = isSetUnit*
+  GluCtx.Γ∙ εᵍ _ = Unit* , isSetUnit*
   contrav-lift (GluCtx.cΓ εᵍ) _ _ =
     (tt* , (λ _ → tt*) , refl , refl) , (λ _ → refl)
 
@@ -45,12 +46,12 @@ module DPRLR.Gluing.LogicalRelations.Substitution
   idᵍ : (Γ : GluCtx) → GluSub Γ Γ
   GluSub.σ° (idᵍ Γ) = idₘ
   GluSub.σ∙ (idᵍ Γ) γ° γ∙ =
-    subst (GluCtx.Γ∙ Γ) (sym (id-leftₘ γ°)) γ∙
+    subst (λ x → ⌞ GluCtx.Γ∙ Γ x ⌟) (sym (id-leftₘ γ°)) γ∙
 
   _∘ᵍ_ : {Γ Δ Θ : GluCtx} → GluSub Θ Δ → GluSub Γ Θ → GluSub Γ Δ
   GluSub.σ° (τ ∘ᵍ σ) = GluSub.σ° τ ∘ₘ GluSub.σ° σ
   GluSub.σ∙ (_∘ᵍ_ {Δ = Δ} τ σ) γ° γ∙ =
-    subst (GluCtx.Γ∙ Δ)
+    subst (λ x → ⌞ GluCtx.Γ∙ Δ x ⌟)
       (sym (∘-assocₘ (GluSub.σ° τ) (GluSub.σ° σ) γ°))
       (GluSub.σ∙ τ
         (GluSub.σ° σ ∘ₘ γ°)
@@ -58,13 +59,13 @@ module DPRLR.Gluing.LogicalRelations.Substitution
 
   id-left₀ : (Γ : GluCtx) (γ : GluSub₀ Γ) → idᵍ Γ ∘₀ γ ≡ γ
   id-left₀ Γ (γ , γ∙) =
-    sym (ΣPathP-subst (GluCtx.Γ∙ Γ) (sym (id-leftₘ γ)) γ∙)
+    sym (ΣPathP-subst (λ x → ⌞ GluCtx.Γ∙ Γ x ⌟) (sym (id-leftₘ γ)) γ∙)
 
   ∘-assoc₀ : {Γ Δ Θ : GluCtx}
     (τ : GluSub Θ Δ) (σ : GluSub Γ Θ) (γ : GluSub₀ Γ)
     → (τ ∘ᵍ σ) ∘₀ γ ≡ τ ∘₀ (σ ∘₀ γ)
   ∘-assoc₀ {Δ = Δ} τ σ (γ , γ∙) =
-    sym (ΣPathP-subst (GluCtx.Γ∙ Δ)
+    sym (ΣPathP-subst (λ x → ⌞ GluCtx.Γ∙ Δ x ⌟)
       (sym (∘-assocₘ (GluSub.σ° τ) (GluSub.σ° σ) γ))
       (GluSub.σ∙ τ _ (GluSub.σ∙ σ γ γ∙)))
 
@@ -110,7 +111,7 @@ module DPRLR.Gluing.LogicalRelations.Substitution
   GluTm.M° (M [ σ ]Tmᵍ) =
     GluTm.M° M [ GluSub.σ° σ ]Tmₘ
   GluTm.M∙ (_[_]Tmᵍ {A = A} M σ) γ° γ∙ =
-    subst (GluTy.A∙ A)
+    subst (λ x → ⌞ GluTy.A∙ A x ⌟)
       (sym (Tm-∘ₘ (GluTm.M° M) (GluSub.σ° σ) γ°))
       (GluTm.M∙ M
         (GluSub.σ° σ ∘ₘ γ°)
@@ -120,7 +121,7 @@ module DPRLR.Gluing.LogicalRelations.Substitution
     (t : GluTm Δ A) (σ : GluSub Γ Δ) (γ : GluSub₀ Γ)
     → (t [ σ ]Tmᵍ) [ γ ]Tm₀ ≡ t [ σ ∘₀ γ ]Tm₀
   Tm-∘₀ {A = A} t σ (γ , γ∙) =
-    sym (ΣPathP-subst (GluTy.A∙ A) (sym (Tm-∘ₘ (GluTm.M° t) (GluSub.σ° σ) γ))
+    sym (ΣPathP-subst (λ x → ⌞ GluTy.A∙ A x ⌟) (sym (Tm-∘ₘ (GluTm.M° t) (GluSub.σ° σ) γ))
       (GluTm.M∙ t _ (GluSub.σ∙ σ γ γ∙)))
 
   Tm-idᵍ : {Γ : GluCtx} {A : GluTy} (t : GluTm Γ A)
@@ -152,12 +153,12 @@ module DPRLR.Gluing.LogicalRelations.Substitution
   _▷ᵍ_ : GluCtx → GluTy → GluCtx
   GluCtx.Γ° (Γ ▷ᵍ A) =
     GluCtx.Γ° Γ ▷ₘ GluTy.A° A
-  GluCtx.Γ∙ (Γ ▷ᵍ A) δ° =
-    Σ (GluCtx.Γ∙ Γ (pₘ ∘ₘ δ°))
-      (λ _ → GluTy.A∙ A (qₘ [ δ° ]Tmₘ))
-  GluCtx.Γ∙-isSet (Γ ▷ᵍ A) δ° =
-    isSetΣ (GluCtx.Γ∙-isSet Γ (pₘ ∘ₘ δ°))
-      (λ _ → GluTy.A∙-isSet A (qₘ [ δ° ]Tmₘ))
+  GluCtx.Γ∙ (Γ ▷ᵍ A) δ° .fst =
+    Σ ⌞ GluCtx.Γ∙ Γ (pₘ ∘ₘ δ°) ⌟
+      (λ _ → ⌞ GluTy.A∙ A (qₘ [ δ° ]Tmₘ) ⌟)
+  GluCtx.Γ∙ (Γ ▷ᵍ A) δ° .snd =
+    isSetΣ (str (GluCtx.Γ∙ Γ (pₘ ∘ₘ δ°)))
+      (λ _ → str (GluTy.A∙ A (qₘ [ δ° ]Tmₘ)))
   GluCtx.cΓ (Γ ▷ᵍ A) =
     contravariant-×
       (contravariant-reindex (λ δ° → pₘ ∘ₘ δ°) (GluCtx.cΓ Γ))
@@ -174,20 +175,20 @@ module DPRLR.Gluing.LogicalRelations.Substitution
   ⟨_,_⟩₀ : {Γ : GluCtx} {A : GluTy}
     → GluSub₀ Γ → GluTm₀ A → GluSub₀ (Γ ▷ᵍ A)
   ⟨_,_⟩₀ {Γ} {A} (γ , γ∙) (t , t∙) = ⟨ γ , t ⟩ₘ
-    , subst (GluCtx.Γ∙ Γ) (sym (p-⟨⟩ₘ γ t)) γ∙
-    , subst (GluTy.A∙ A) (sym (q-⟨⟩ₘ γ t)) t∙
+    , subst (λ x → ⌞ GluCtx.Γ∙ Γ x ⌟) (sym (p-⟨⟩ₘ γ t)) γ∙
+    , subst (λ x → ⌞ GluTy.A∙ A x ⌟) (sym (q-⟨⟩ₘ γ t)) t∙
 
   p-⟨⟩₀ : {Γ : GluCtx} {A : GluTy}
     (γ : GluSub₀ Γ) (t : GluTm₀ A)
     → pᵍ {Γ = Γ} {A = A} ∘₀ ⟨_,_⟩₀ {Γ = Γ} {A = A} γ t ≡ γ
   p-⟨⟩₀ {Γ} (γ , γ∙) (t , t∙) =
-    sym (ΣPathP-subst (GluCtx.Γ∙ Γ) (sym (p-⟨⟩ₘ γ t)) γ∙)
+    sym (ΣPathP-subst (λ x → ⌞ GluCtx.Γ∙ Γ x ⌟) (sym (p-⟨⟩ₘ γ t)) γ∙)
 
   q-⟨⟩₀ : {Γ : GluCtx} {A : GluTy}
     (γ : GluSub₀ Γ) (t : GluTm₀ A)
     → qᵍ {Γ = Γ} {A = A} [ ⟨_,_⟩₀ {Γ = Γ} {A = A} γ t ]Tm₀ ≡ t
   q-⟨⟩₀ {Γ = Γ} {A = A} (γ , γ∙) (t , t∙) =
-    sym (ΣPathP-subst (GluTy.A∙ A) (sym (q-⟨⟩ₘ γ t)) t∙)
+    sym (ΣPathP-subst (λ x → ⌞ GluTy.A∙ A x ⌟) (sym (q-⟨⟩ₘ γ t)) t∙)
 
   ▷η₀ : {Γ : GluCtx} {A : GluTy} (δ : GluSub₀ (Γ ▷ᵍ A))
     → ⟨_,_⟩₀ {Γ} {A} (pᵍ {Γ} {A} ∘₀ δ) (qᵍ {Γ} {A} [ δ ]Tm₀) ≡ δ
@@ -204,14 +205,14 @@ module DPRLR.Gluing.LogicalRelations.Substitution
         δ
       ∎
 
-    ctx : PathP (λ i → GluCtx.Γ∙ Γ (pₘ ∘ₘ base i))
-      (subst (GluCtx.Γ∙ Γ) (sym (p-⟨⟩ₘ (pₘ ∘ₘ δ) (qₘ [ δ ]Tmₘ))) (fst δ∙))
+    ctx : PathP (λ i → ⌞ GluCtx.Γ∙ Γ (pₘ ∘ₘ base i) ⌟)
+      (subst (λ x → ⌞ GluCtx.Γ∙ Γ x ⌟) (sym (p-⟨⟩ₘ (pₘ ∘ₘ δ) (qₘ [ δ ]Tmₘ))) (fst δ∙))
       (fst δ∙)
     ctx = ΣPath→PathP (sub-setₘ εₘ (GluCtx.Γ° Γ)) (cong (pₘ ∘ₘ_) base)
       (p-⟨⟩₀ {Γ} {A} (pₘ ∘ₘ δ , fst δ∙) (qₘ [ δ ]Tmₘ , snd δ∙))
 
-    arg : PathP (λ i → GluTy.A∙ A (qₘ [ base i ]Tmₘ))
-      (subst (GluTy.A∙ A) (sym (q-⟨⟩ₘ (pₘ ∘ₘ δ) (qₘ [ δ ]Tmₘ))) (snd δ∙))
+    arg : PathP (λ i → ⌞ GluTy.A∙ A (qₘ [ base i ]Tmₘ) ⌟)
+      (subst (λ x → ⌞ GluTy.A∙ A x ⌟) (sym (q-⟨⟩ₘ (pₘ ∘ₘ δ) (qₘ [ δ ]Tmₘ))) (snd δ∙))
       (snd δ∙)
     arg = ΣPath→PathP (tm-setₘ εₘ (GluTy.A° A)) (cong (qₘ [_]Tmₘ) base)
       (q-⟨⟩₀ {Γ} {A} (pₘ ∘ₘ δ , fst δ∙) (qₘ [ δ ]Tmₘ , snd δ∙))
@@ -220,14 +221,14 @@ module DPRLR.Gluing.LogicalRelations.Substitution
     → GluSub Γ Δ → GluTm Γ A → GluSub Γ (Δ ▷ᵍ A)
   GluSub.σ° ⟨ σ , t ⟩ᵍ = ⟨ GluSub.σ° σ , GluTm.M° t ⟩ₘ
   GluSub.σ∙ (⟨_,_⟩ᵍ {Δ = Δ} {A = A} σ t) γ γ∙ =
-    subst (GluCtx.Γ∙ (Δ ▷ᵍ A)) (sym (⟨⟩-∘ₘ (GluSub.σ° σ) (GluTm.M° t) γ))
+    subst (λ x → ⌞ GluCtx.Γ∙ (Δ ▷ᵍ A) x ⌟) (sym (⟨⟩-∘ₘ (GluSub.σ° σ) (GluTm.M° t) γ))
       (snd (⟨_,_⟩₀ {Γ = Δ} {A = A} (σ ∘₀ (γ , γ∙)) (t [ γ , γ∙ ]Tm₀)))
 
   ⟨⟩-∘₀ : {Γ Δ : GluCtx} {A : GluTy}
     (σ : GluSub Γ Δ) (t : GluTm Γ A) (γ : GluSub₀ Γ)
     → ⟨ σ , t ⟩ᵍ ∘₀ γ ≡ ⟨_,_⟩₀ {Γ = Δ} {A = A} (σ ∘₀ γ) (t [ γ ]Tm₀)
   ⟨⟩-∘₀ {Δ = Δ} {A = A} σ t (γ , γ∙) =
-    sym (ΣPathP-subst (GluCtx.Γ∙ (Δ ▷ᵍ A))
+    sym (ΣPathP-subst (λ x → ⌞ GluCtx.Γ∙ (Δ ▷ᵍ A) x ⌟)
       (sym (⟨⟩-∘ₘ (GluSub.σ° σ) (GluTm.M° t) γ))
       (snd (⟨_,_⟩₀ {Γ = Δ} {A = A} (σ ∘₀ (γ , γ∙)) (t [ γ , γ∙ ]Tm₀))))
 

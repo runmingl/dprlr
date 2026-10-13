@@ -1,448 +1,174 @@
 module DPRLR.README where
 
 {-
-  This file is a curated guide to the formalization, ordered by the
-  presentation in the paper.
+  Paper guide to the mechanization.
 
-  The formalization is checked against Agda v2.8.0 with cubical library v0.9.
-  It covers the simply typed directed syntax via localization, unary gluing model,
-  boolean canonicity theorem, and the basic binary contravariance lemma.
+  Checked with Agda 2.8.0 and Cubical 0.9.
 -}
 
-{-
-  Section 2. Basic simplicial type theory used to model reduction.
--}
-{-
-    Section 2 and Definition 2.1.
-    The directed interval has endpoints 𝟎 and 𝟏 and induces inequality types.
-    Interval.agda postulates a set with a propositional bounded total order;
-    totality is propositionally truncated. Meet and join are derived from
-    these order laws.
--}
-import DPRLR.Simplicial.Interval using
-  ( 𝟚
-  ; 𝟎
-  ; 𝟏
-  )
-import DPRLR.Simplicial.Hom using
-  ( _≤_
-  ; hom-refl
-  ; path→hom
-  )
+{- Section 2 — Modeling Reduction in Syntax ----------------------------- -}
 
-{-
-    Lemma 2.2.
-    Inequalities between functions are equivalent to pointwise inequalities.
--}
+{- Definition 2.1 — Directed intervals and inequality types. -}
+import DPRLR.Simplicial.Interval using (𝟚 ; 𝟎 ; 𝟏)
+import DPRLR.Simplicial.Hom using (_≤_ ; hom-refl)
+
+{- Lemma 2.2 — Directed function extensionality. -}
 import DPRLR.Simplicial.Function using
-  ( hom-funExt⁻
-  ; hom-funExt
-  ; hom-funExt⁻≃
-  )
+  (hom-funExt⁻ ; hom-funExt ; hom-funExt⁻≃)
 
-{-
-    Section 2.1.
-    Inequalities are functorial: a map sends inequalities in the domain to
-    inequalities in the codomain.
--}
-import DPRLR.Simplicial.Hom using
-  ( hom-map
-  )
+{- Section 2.1 — Judgmental reduction as directed structure. -}
+import DPRLR.Simplicial.Hom using (hom-map)
+import DPRLR.Object.Model.Model using (SimpleCwF)
+import DPRLR.Object.Model.Morphism.Base using (SimpleMorphism)
+import DPRLR.Simplicial.Hom using (isThin)
+import DPRLR.Simplicial.Segal using (isSegal ; segal-compose)
 
-{-
-  Section 2.2. The simply typed object language and its initial directed CwF.
--}
-{-
-    Section 2.2.
-    A directed model is a simply typed CwF with booleans, products, functions, and
-    directed beta/eta reductions, where the substitution and term types are both preorders.
--}
-import DPRLR.Object.Model.Model using
-  ( SimpleCwF
-  )
-
-{-
-    Section 2.2.1.
-    The raw directed HIT contains types, contexts, substitutions, terms, and
-    the directed computation laws.
--}
+{- Section 2.2.1 — Directed higher inductive types.
+   Raw contains the point, equality, and directed inequality constructors. -}
 import DPRLR.Object.Syntax.Raw using
-  ( Ty
-  ; Ctx
-  ; Sub
-  ; Tm
-  ; Bool
-  ; _×ᵗʸ_
-  ; _⇒ᵗʸ_
-  ; ε
-  ; _▷_
-  ; id
-  ; _∘_
-  ; ε-sub
-  ; p
-  ; q
-  ; ⟨_,_⟩
-  ; _[_]Tm
-  ; true
-  ; false
-  ; if_then_else_
-  ; pair
-  ; fst
-  ; snd
-  ; lam
-  ; app
-  ; true[]
-  ; false[]
-  ; if[]
-  ; pair[]
-  ; fst[]
-  ; snd[]
-  ; lam[]
-  ; app[]
-  ; βif-true
-  ; βif-false
-  ; β×₁
-  ; β×₂
-  ; η×
-  ; β⇒
-  ; η⇒
+  ( Ty ; Ctx ; Sub ; Tm
+  ; Bool ; _×ᵗʸ_ ; _⇒ᵗʸ_ ; ε ; _▷_
+  ; id ; _∘_ ; ε-sub ; p ; q ; ⟨_,_⟩ ; _[_]Tm
+  ; true ; false ; if_then_else_ ; pair ; fst ; snd ; lam ; app
+  ; true[] ; false[] ; if[] ; pair[] ; fst[] ; snd[] ; lam[] ; app[]
+  ; βif-true ; βif-false ; β×₁ ; β×₂ ; η× ; β⇒ ; η⇒
   )
 
-{-
-    Section 2.2.2.
-    Thinness says that parallel inequalities form propositions.
--}
-import DPRLR.Simplicial.Hom using
-  ( isThin
-  )
+{- Definition 2.3 — Dependent inequality types. -}
+import DPRLR.Simplicial.Hom using (_⊢_≤[_]_)
 
-{-
-    Section 2.2.3.
-    We use cone composites: an arrow h : x ≤ z together with a dependent
-    arrow from h to g over f in the family (λ w → w ≤ z).
-    Their contractibility makes representables contravariant directly and
-    keeps the transport and total-space proofs in the same formulation.
--}
-import DPRLR.Simplicial.Segal using
-  ( isSegal
-  ; Composite
-  ; segal-compose
-  ; segal-compose-witness
-  )
-
-import DPRLR.Simplicial.Shapes using
-  ( Λ²
-  ; Δ²
-  ; ι-horn
-  )
-
+{- Section 2.3 — The reflective subuniverse of preorders.
+   Shapes and path transitivity describe the Segal condition; the
+   localization maps then construct the preorder reflector. -}
+import DPRLR.Simplicial.Shapes using (Λ² ; Δ² ; ι-horn)
 import DPRLR.Simplicial.PathTransitive using
-  ( isPathTransitive
-  ; isSegal≡isPathTransitive
-  )
-
-{-
-    Section 2.2.2, Section 2.2.3, and Appendix A.
-    The localization reflector produces types that are set, thin, and Segal.
--}
+  (isPathTransitive ; isSegal≡isPathTransitive)
 import DPRLR.Simplicial.PreorderLocalization using
-  ( Fᴾ
-  ; ∥_∥ᴾ
-  ; ηᴾ
-  ; recᴾ
-  ; recᴾ-unique
-  ; ηᴾ-universal
-  ; ∥∥ᴾ-isPreorder
-  ; isPreorder→isSet
-  ; isPreorder→isThin
-  ; isPreorder→isSegal
+  ( isPreorder ; Preorder
+  ; isPreorder→isSet ; isPreorder→isThin ; isPreorder→isSegal
   ; isSetThinSegal→isPreorder
+  ; Fᴾ ; ∥_∥ᴾ ; ηᴾ ; ∥∥ᴾ-isPreorder
   )
 
-{-
-    Section 2.2.2, Section 2.2.3, and Appendix A.
-    Raw substitutions and terms are reflected into the subuniverse of synthetic preorders.
--}
-import DPRLR.Object.Syntax.Base using
-  ( Subᴾ
-  ; Tmᴾ
-  ; ηSubᴾ
-  ; ηTmᴾ
-  ; Subᴾ-isPreorder
-  ; Tmᴾ-isPreorder
-  )
+{- Lemma 2.5 — Universal property of localization. -}
+import DPRLR.Simplicial.PreorderLocalization using (ηᴾ-universal)
 
-{-
-    Section 2.2.
-    The reflected syntax inherits all CwF operations and directed computation laws.
--}
-import DPRLR.Object.Syntax.Base using
-  ( idᴾ
-  ; _∘ᴾ_
-  ; ε-subᴾ
-  ; pᴾ
-  ; qᴾ
-  ; ⟨_,_⟩ᴾ
-  ; _[_]Tmᴾ
-  ; trueᴾ
-  ; falseᴾ
-  ; ifᴾ
-  ; pairᴾ
-  ; fstᴾ
-  ; sndᴾ
-  ; lamᴾ
-  ; appᴾ
-  ; true[]ᴾ
-  ; false[]ᴾ
-  ; if[]ᴾ
-  ; pair[]ᴾ
-  ; fst[]ᴾ
-  ; snd[]ᴾ
-  ; lam[]ᴾ
-  ; app[]ᴾ
-  ; βif-trueᴾ
-  ; βif-falseᴾ
-  ; β×₁ᴾ
-  ; β×₂ᴾ
-  ; η×ᴾ
-  ; β⇒ᴾ
-  ; η⇒ᴾ
+{- Theorem 2.6 — Initiality of the localized syntax.
+   Localized contains every substitution and term operation, equation,
+   and directed reduction. Model packages this syntactic model as a CwF, which is initial. -}
+import DPRLR.Object.Syntax.Localized using
+  ( Subᴾ ; Tmᴾ
+  ; idᴾ ; _∘ᴾ_ ; ε-subᴾ ; pᴾ ; qᴾ ; ⟨_,_⟩ᴾ ; _[_]Tmᴾ
+  ; trueᴾ ; falseᴾ ; ifᴾ
+  ; pairᴾ ; fstᴾ ; sndᴾ ; lamᴾ ; appᴾ
+  ; id-leftᴾ ; id-rightᴾ ; ∘-assocᴾ ; εηᴾ
+  ; p-⟨⟩ᴾ ; q-⟨⟩ᴾ ; ▷ηᴾ ; ⟨⟩-∘ᴾ ; Tmᴾ-id ; Tmᴾ-∘
+  ; true[]ᴾ ; false[]ᴾ ; if[]ᴾ
+  ; pair[]ᴾ ; fst[]ᴾ ; snd[]ᴾ ; lam[]ᴾ ; app[]ᴾ
+  ; βif-trueᴾ ; βif-falseᴾ ; β×₁ᴾ ; β×₂ᴾ ; η×ᴾ ; β⇒ᴾ ; η⇒ᴾ
   )
+import DPRLR.Object.Syntax.Model using (SyntaxModel)
+import DPRLR.Object.Syntax.Initiality using (syntax-isInitial)
 
-{-
-    Section 2.2.
-    The (localized) syntax is packaged as the directed syntactic model.
--}
-import DPRLR.Object.Syntax.Model using
-  ( SyntaxModel
-  )
+{- Section 3 — Logical Relations Model ---------------------------------- -}
 
-import DPRLR.Object.Model.Morphism.Base using
-  ( SimpleMorphism
-  ; isInitialDirected
-  )
-
-import DPRLR.Object.Syntax.Initiality using
-  ( syntax-isInitial
-  )
-
-{-
-    Definition 2.3.
-    Dependent inequality types compare elements over an inequality in the base.
--}
-import DPRLR.Simplicial.Hom using
-  ( _⊢_≤[_]_
-  )
-
-{-
-  Sections 3.2--3.4 and Section 4.2. Simplicial structure used by gluing.
--}
-{-
-    Definition 3.1.
-    A contravariant family has a contractible space of lifts along every inequality.
--}
-import DPRLR.Simplicial.Contravariant using
-  ( isContravariant
-  )
-
-{-
-    Definition 3.2.
-    Contravariant transport moves evidence backwards along reductions.
--}
-import DPRLR.Simplicial.Contravariant using
-  ( contrav-transport
-  ; contravariant-lift-hom
-  )
-
-{-
-    Lemma 3.3 and Lemma 3.4.
-    Contravariant transport is functorial and satisfies its universal property.
--}
-import DPRLR.Simplicial.Contravariant using
-  ( contravariant-transport-refl
-  ; contravariant-transport-compose
-  ; contravariant-universal≃
-  )
-
-{-
-    Lemma 3.5.
-    Inequalities at products and Σ-types are constructed componentwise.
--}
-import DPRLR.Simplicial.Product using
-  ( HomP×
-  ; HomPΣ
-  ; Σ≤
-  )
-
-{-
-    Lemma 3.6.
-    Representable families are contravariant.
--}
-import DPRLR.Simplicial.Contravariant using
-  ( representable-isContravariant
-  )
-
-import DPRLR.Simplicial.Contravariant using
-  ( contravariant-total-isSegal
-  ; contravariant-total-isThin
-  )
-
-{-
-    Section 4.2.
-    Definition 4.1
-    Example 4.2
-    Discrete types identify inequalities with ordinary paths.
-    Note that Bool₂-isDiscrete is a postulate because it is an axiom
-    in simplicial type theory, e.g.
-    - Axiom 7 in Daniel Gratzer, Jonathan Weinberger, and Ulrik Buchholtz. 2026.
-        Directed univalence in simplicial homotopy type theory.
-    - Axiom 4 in Daniel Gratzer, Jonathan Weinberger, and Ulrik Buchholtz. 2026.
-        The ∞-category of ∞-categories in simplicial type theory.
--}
-import DPRLR.Simplicial.Discrete using
-  ( isDiscrete
-  ; hom→path
-  ; hom-to-isContr
-  ; Bool₂-isDiscrete
-  )
-
-{-
-    Section 3 and Section 4.2.1.
-    Lemma 4.3
-    Contravariant families are closed under the type formers used in gluing.
--}
-import DPRLR.Simplicial.Contravariant using
-  ( contravariant-fiber-isDiscrete
-  ; contravariant-reindex
-  ; contravariant-discrete
-  ; contravariant-Σ
-  ; contravariant-Σ-discrete
-  ; contravariant-×
-  ; contravariant-Π
-  )
-
-{-
-  Section 3 and Appendix B. Unary gluing and boolean canonicity.
--}
-{-
-    Section 3.1.
-    Glued contexts, substitutions, types, terms, and term inequalities refine
-    the base CwF.
--}
+{- Section 3.1 — Semantics of the judgmental structure.
+   Judgment contains the final refined glued records used by the model. -}
 import DPRLR.Gluing.LogicalRelations.Judgment using
-  ( GluCtx
-  ; GluSub
-  ; GluTy
-  ; GluTm
-  ; _≤ᵍ_
-  ; ≤ᵍ≃≤
-  )
+  (GluCtx ; GluSub ; GluTy ; GluTm)
 
-{-
-    Section 3.1, Section 3.3 and Appendix B.2.
-    The gluing model validates substitution and context-extension structure.
--}
-import DPRLR.Gluing.LogicalRelations.Substitution using
-  ( εᵍ
-  ; ε-subᵍ
-  ; εηᵍ
-  ; idᵍ
-  ; _∘ᵍ_
-  ; id-leftᵍ
-  ; id-rightᵍ
-  ; _[_]Tmᵍ
-  ; Tm-idᵍ
-  ; Tm-∘ᵍ
-  ; _▷ᵍ_
-  ; pᵍ
-  ; qᵍ
-  ; ⟨_,_⟩ᵍ
-  ; p-⟨⟩ᵍ
-  ; q-⟨⟩ᵍ
-  ; ▷ηᵍ
-  ; ⟨⟩-∘ᵍ
-  )
-
-{-
-    Section 3.2.
-    Products in the gluing model.
--}
+{- Section 3.2 — Semantics of product. -}
 import DPRLR.Gluing.LogicalRelations.Product using
-  ( PROD
-  ; PAIR
-  ; FST
-  ; SND
-  ; PAIR[]
-  ; FST[]
-  ; SND[]
-  ; PROD-preserves-β₁
-  ; PROD-preserves-β₂
-  ; PROD-preserves-η
-  )
+  (PROD ; FST ; SND ; FST[] ; SND[])
 
-{-
-    Section 3.3.
-    Functions in the gluing model.
--}
+{- Definition 3.1 — Contravariant families. -}
+import DPRLR.Simplicial.Contravariant using (isContravariant)
+
+{- Definition 3.2 — Contravariant transport. -}
+import DPRLR.Simplicial.Contravariant using (contrav-transport)
+
+{- Lemma 3.3 — Functoriality of contravariant transport. -}
+import DPRLR.Simplicial.Contravariant using
+  (contravariant-transport-refl ; contravariant-transport-compose)
+
+{- Lemma 3.4 — Universal property of contravariant transport. -}
+import DPRLR.Simplicial.Contravariant using
+  (contravariant-universal≃)
+
+{- Lemma 3.5 — Preorder total spaces of contravariant families. -}
+import DPRLR.Simplicial.Contravariant using (contravariant-total-isPreorder)
+
+{- Corollary 3.6 — Glued substitutions and terms are preorders. -}
+import DPRLR.Gluing.LogicalRelations.Judgment using
+  (GluSub-isPreorder ; GluTm-isPreorder)
+
+{- Lemma 3.7 — Inequalities at Σ-types. -}
+import DPRLR.Simplicial.Product using (HomΣ≃)
+
+{- Section 3.2.2 — Glued semantics for pair. -}
+import DPRLR.Gluing.LogicalRelations.Product using
+  (PAIR ; PAIR[])
+
+{- Lemma 3.8 — Contravariance under reindexing. -}
+import DPRLR.Simplicial.Contravariant using (contravariant-reindex)
+
+{- Lemma 3.9 — Contravariance under products. -}
+import DPRLR.Simplicial.Contravariant using (contravariant-×)
+
+{- Section 3.2.3 — Glued terms respect the directed product quotient. -}
+import DPRLR.Gluing.LogicalRelations.Product using
+  (PROD-preserves-β₁ ; PROD-preserves-β₂)
+
+{- Section 3.2.4 — The product η-reduction is validated too. -}
+import DPRLR.Gluing.LogicalRelations.Product using (PROD-preserves-η)
+
+{- Section 3.3 — Semantics of functions. -}
+import DPRLR.Gluing.LogicalRelations.Function using (FUN)
+
+{- Lemma 3.10 — Contravariance under dependent products. -}
+import DPRLR.Simplicial.Contravariant using (contravariant-Π)
+
+{- Section 3.3.1 — Glued substitution structure. -}
+import DPRLR.Gluing.LogicalRelations.Substitution using
+  (εᵍ ; ε-subᵍ ; εηᵍ ; idᵍ ; _∘ᵍ_ ; id-leftᵍ ; id-rightᵍ
+  ; _[_]Tmᵍ ; Tm-idᵍ ; Tm-∘ᵍ ; _▷ᵍ_ ; pᵍ ; qᵍ ; ⟨_,_⟩ᵍ
+  ; p-⟨⟩ᵍ ; q-⟨⟩ᵍ ; ▷ηᵍ ; ⟨⟩-∘ᵍ)
+
+{- Section 3.3.2 — Glued semantics for lambda and application. -}
 import DPRLR.Gluing.LogicalRelations.Function using
-  ( FUN
-  ; APP
-  ; LAM
-  ; APP[]
-  ; LAM[]
-  ; FUN-preserves-β
-  ; FUN-preserves-η
-  )
+  (APP ; LAM ; APP[] ; LAM[])
 
-{-
-    Section 3.4.
-    The boolean predicate states that a closed boolean reduces to a canonical boolean.
--}
+{- Section 3.3.3 — Glued functions respect the directed quotient. -}
+import DPRLR.Gluing.LogicalRelations.Function using
+  (FUN-preserves-β ; FUN-preserves-η)
+
+{- Section 3.4 — Semantics of Booleans and canonicity. -}
 import DPRLR.Gluing.LogicalRelations.Bool using
-  ( BOOL
-  ; TRUE
-  ; FALSE
-  ; IF
-  ; TRUE[]
-  ; FALSE[]
-  ; IF[]
-  ; IF-preserves-β-true
-  ; IF-preserves-β-false
-  )
+  (BOOL ; TRUE ; FALSE ; IF ; TRUE[] ; FALSE[] ; IF[]
+  ; IF-preserves-β-true ; IF-preserves-β-false)
 
-{-
-    Section 3.
-    The gluing clauses assemble into a simply typed CwF.
--}
-import DPRLR.Gluing.GluingModel using
-  ( GluingCwF
-  )
+{- Lemma 3.11 — Representable contravariant families. -}
+import DPRLR.Simplicial.Contravariant using
+  (representable-isContravariant)
 
-{-
-    Section 3.4.
--}
-import DPRLR.Gluing.FTLR using
-  ( ftlr-section
-  )
+{- Section 3.4.1 — Canonicity via the fundamental theorem of logical relations.
+   GluingModel packages the structure used by FTLR. -}
+import DPRLR.Gluing.GluingModel using (GluingCwF)
+import DPRLR.Gluing.FTLR using (ftlr-section ; bool-canonicityᴾ)
 
-{-
-    Section 3.4.
-    Boolean canonicity extracts a canonical boolean and a reduction from the fundamental theorem.
--}
-import DPRLR.Gluing.FTLR using
-  ( bool-canonicityᴾ
-  )
+{- Section 4 — Universes and Dependency --------------------------------- -}
 
-{-
-  Section 5. Binary logical relations and parametricity.
--}
-{-
-    Lemma 5.1.
-    A contravariant binary relation has contravariant one-variable slices.
-    This only proves the forward direction of Lemma 5.1. The backward direction
-    requires more simplicial primitives.
--}
-import DPRLR.Simplicial.BinaryContravariant using
-  ( SlicesContravariant
-  ; binary-contravariance
-  )
+{- Definition 4.1 — Discrete types. -}
+import DPRLR.Simplicial.Discrete using
+  (isDiscrete ; hom→path)
+
+{- Axiom 4.3 — Boolean discreteness.
+   This is a postulate of the synthetic simplicial layer. -}
+import DPRLR.Simplicial.Discrete using (Bool₂-isDiscrete)
+
+{- Section 5 — Binary Logical Relations and Parametricity --------------- -}
+
+{- Lemma 5.1 — Binary contravariance.
+   Only the implication from contravariance of the binary family to
+   contravariance of its one-variable slices is mechanized. -}
+import DPRLR.Simplicial.BinaryContravariant using (binary-contravariance)

@@ -1,7 +1,8 @@
 open import Cubical.Foundations.Prelude
+open import Cubical.Foundations.Structure using (str)
 open import Cubical.Foundations.Equiv
 open import Cubical.Foundations.Isomorphism
-open import Cubical.Foundations.HLevels using (isSetΠ2)
+open import Cubical.Foundations.HLevels using (hSet ; isSetΠ2)
 
 open import DPRLR.Simplicial.Hom
 open import DPRLR.Simplicial.Contravariant
@@ -19,16 +20,15 @@ module DPRLR.Gluing.LogicalRelations.Judgment
   record GluCtx : Type (ℓ-max ℓS (ℓ-suc ℓM)) where
     field
       Γ° : Ctxₘ
-      Γ∙ : ⌞ Subₘ εₘ Γ° ⌟ → Type ℓM
-      Γ∙-isSet : (γ° : ⌞ Subₘ εₘ Γ° ⌟) → isSet (Γ∙ γ°)
-      cΓ : isContravariant Γ∙
+      Γ∙ : ⌞ Subₘ εₘ Γ° ⌟ → hSet ℓM
+      cΓ : isContravariant (λ γ° → ⌞ Γ∙ γ° ⌟)
 
   open GluCtx
 
   record GluSub (Γ Δ : GluCtx) : Type ℓM where
     field
       σ° : ⌞ Subₘ (Γ° Γ) (Γ° Δ) ⌟
-      σ∙ : (γ° : ⌞ Subₘ εₘ (Γ° Γ) ⌟) → Γ∙ Γ γ° → Γ∙ Δ (σ° ∘ₘ γ°)
+      σ∙ : (γ° : ⌞ Subₘ εₘ (Γ° Γ) ⌟) → ⌞ Γ∙ Γ γ° ⌟ → ⌞ Γ∙ Δ (σ° ∘ₘ γ°) ⌟
 
   open GluSub
 
@@ -40,27 +40,26 @@ module DPRLR.Gluing.LogicalRelations.Judgment
         (λ s → σ° s , σ∙ s)
         (λ _ → refl) (λ _ → refl)))
       (contravariant-total-isPreorder
-        {C = λ s° → (γ° : ⌞ Subₘ εₘ (Γ° Γ) ⌟) → Γ∙ Γ γ° → Γ∙ Δ (s° ∘ₘ γ°)}
+        {C = λ s° → (γ° : ⌞ Subₘ εₘ (Γ° Γ) ⌟) → ⌞ Γ∙ Γ γ° ⌟ → ⌞ Γ∙ Δ (s° ∘ₘ γ°) ⌟}
         (sub-localₘ (Γ° Γ) (Γ° Δ))
         (contravariant-Π λ γ° →
           contravariant-Π λ _ →
             contravariant-reindex (λ s° → s° ∘ₘ γ°) (cΓ Δ))
-        (λ s° → isSetΠ2 λ γ° _ → Γ∙-isSet Δ (s° ∘ₘ γ°)))
+        (λ s° → isSetΠ2 λ γ° _ → str (Γ∙ Δ (s° ∘ₘ γ°))))
 
   record GluTy : Type (ℓ-max ℓS (ℓ-suc ℓM)) where
     field
       A° : Tyₘ
-      A∙ : ⌞ Tmₘ εₘ A° ⌟ → Type ℓM
-      A∙-isSet : (M° : ⌞ Tmₘ εₘ A° ⌟) → isSet (A∙ M°)
-      cA : isContravariant A∙
+      A∙ : ⌞ Tmₘ εₘ A° ⌟ → hSet ℓM
+      cA : isContravariant (λ M° → ⌞ A∙ M° ⌟)
 
   open GluTy
 
   record GluTm (Γ : GluCtx) (A : GluTy) : Type ℓM where
     field
       M° : ⌞ Tmₘ (Γ° Γ) (A° A) ⌟
-      M∙ : (γ° : ⌞ Subₘ εₘ (Γ° Γ) ⌟) (γ∙ : Γ∙ Γ γ°)
-        → A∙ A (M° [ γ° ]Tmₘ)
+      M∙ : (γ° : ⌞ Subₘ εₘ (Γ° Γ) ⌟) (γ∙ : ⌞ Γ∙ Γ γ° ⌟)
+        → ⌞ A∙ A (M° [ γ° ]Tmₘ) ⌟
 
   open GluTm
 
@@ -72,18 +71,18 @@ module DPRLR.Gluing.LogicalRelations.Judgment
         (λ m → M° m , M∙ m)
         (λ _ → refl) (λ _ → refl)))
       (contravariant-total-isPreorder
-        {C = λ m° → (γ° : ⌞ Subₘ εₘ (Γ° Γ) ⌟) (γ∙ : Γ∙ Γ γ°) → A∙ A (m° [ γ° ]Tmₘ)}
+        {C = λ m° → (γ° : ⌞ Subₘ εₘ (Γ° Γ) ⌟) (γ∙ : ⌞ Γ∙ Γ γ° ⌟) → ⌞ A∙ A (m° [ γ° ]Tmₘ) ⌟}
         (tm-localₘ (Γ° Γ) (A° A))
         (contravariant-Π λ γ° →
           contravariant-Π λ _ →
             contravariant-reindex (λ m° → m° [ γ° ]Tmₘ) (cA A))
-        (λ m° → isSetΠ2 λ γ° _ → A∙-isSet A (m° [ γ° ]Tmₘ)))
+        (λ m° → isSetΠ2 λ γ° _ → str (A∙ A (m° [ γ° ]Tmₘ))))
 
   GluSub₀ : GluCtx → Type ℓM
-  GluSub₀ Γ = Σ ⌞ Subₘ εₘ (Γ° Γ) ⌟ (Γ∙ Γ)
+  GluSub₀ Γ = Σ ⌞ Subₘ εₘ (Γ° Γ) ⌟ (λ x → ⌞ Γ∙ Γ x ⌟)
 
   GluTm₀ : GluTy → Type ℓM
-  GluTm₀ A = Σ ⌞ Tmₘ εₘ (A° A) ⌟ (A∙ A)
+  GluTm₀ A = Σ ⌞ Tmₘ εₘ (A° A) ⌟ (λ x → ⌞ A∙ A x ⌟)
 
   _∘₀_ : {Γ Δ : GluCtx} → GluSub Γ Δ → GluSub₀ Γ → GluSub₀ Δ
   σ ∘₀ (γ , γ∙) = σ° σ ∘ₘ γ , σ∙ σ γ γ∙
@@ -109,8 +108,8 @@ module DPRLR.Gluing.LogicalRelations.Judgment
     (M N : GluTm Γ A) : Type ℓM where
     field
       r° : M° M ≤ M° N
-      r∙ : (γ° : ⌞ Subₘ εₘ (Γ° Γ) ⌟) (γ∙ : Γ∙ Γ γ°)
-        → A∙ A ⊢ M∙ M γ° γ∙
+      r∙ : (γ° : ⌞ Subₘ εₘ (Γ° Γ) ⌟) (γ∙ : ⌞ Γ∙ Γ γ° ⌟)
+        → (λ x → ⌞ A∙ A x ⌟) ⊢ M∙ M γ° γ∙
           ≤[ hom-map (λ t → t [ γ° ]Tmₘ) r° ]
           M∙ N γ° γ∙
 
@@ -168,7 +167,7 @@ module DPRLR.Gluing.LogicalRelations.Judgment
     { r° = r
     ; r∙ = λ γ γ∙ →
         let e = h (γ , γ∙) in
-        subst (λ f → A∙ A ⊢ M∙ t γ γ∙ ≤[ f ] M∙ u γ γ∙)
+        subst (λ f → (λ x → ⌞ A∙ A x ⌟) ⊢ M∙ t γ γ∙ ≤[ f ] M∙ u γ γ∙)
           (tm-thinₘ εₘ (A° A) _ _ (hom-map fst e)
             (hom-map (λ t → t [ γ ]Tmₘ) r))
           ((λ i → hom-path e i .snd)

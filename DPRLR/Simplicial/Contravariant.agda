@@ -4,6 +4,7 @@ open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Equiv
 open import Cubical.Foundations.Equiv.Fiberwise using (fiberEquiv)
 open import Cubical.Foundations.Equiv.Properties using (isEquivFromIsContr)
+open import Cubical.Foundations.Function
 open import Cubical.Foundations.HLevels
 open import Cubical.Foundations.Isomorphism
 open import Cubical.Foundations.Path
@@ -137,7 +138,7 @@ contravariant-reindex :
   {A : Type ℓ} {B : Type ℓ'} {C : B → Type ℓ''}
   → (g : A → B)
   → isContravariant C
-  → isContravariant (λ x → C (g x))
+  → isContravariant (C ∘ g)
 contravariant-reindex g c .contrav-lift f v =
   contrav-lift c (hom-map g f) v
 

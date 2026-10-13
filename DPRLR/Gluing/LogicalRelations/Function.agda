@@ -1,4 +1,5 @@
 open import Cubical.Foundations.Prelude
+open import Cubical.Foundations.Structure using (str)
 open import Cubical.Foundations.HLevels using (isSetΠ2)
 open import Cubical.Data.Sigma
 
@@ -22,8 +23,8 @@ module DPRLR.Gluing.LogicalRelations.Function
     → Type ℓM
   FUN∙ A B F =
     (M° : ⌞ Tmₘ εₘ (GluTy.A° A) ⌟)
-    → GluTy.A∙ A M°
-    → GluTy.A∙ B (appₘ F M°)
+    → ⌞ GluTy.A∙ A M° ⌟
+    → ⌞ GluTy.A∙ B (appₘ F M°) ⌟
 
   FUN-contravariant :
     (A B : GluTy)
@@ -39,9 +40,8 @@ module DPRLR.Gluing.LogicalRelations.Function
     (A B : GluTy)
     → GluTy
   GluTy.A° (FUN A B) = GluTy.A° A ⇒ₘ GluTy.A° B
-  GluTy.A∙ (FUN A B) = FUN∙ A B
-  GluTy.A∙-isSet (FUN A B) F =
-    isSetΠ2 λ M° _ → GluTy.A∙-isSet B (appₘ F M°)
+  GluTy.A∙ (FUN A B) F = FUN∙ A B F ,
+    isSetΠ2 λ M° _ → str (GluTy.A∙ B (appₘ F M°))
   GluTy.cA (FUN A B) = FUN-contravariant A B
 
   APP₀ : (A B : GluTy)
@@ -52,14 +52,14 @@ module DPRLR.Gluing.LogicalRelations.Function
     → GluTm Γ (FUN A B) → GluTm Γ A → GluTm Γ B
   GluTm.M° (APP F M) = appₘ (GluTm.M° F) (GluTm.M° M)
   GluTm.M∙ (APP {B = B} F M) γ γ∙ =
-    subst (GluTy.A∙ B) (sym (app[]ₘ (GluTm.M° F) (GluTm.M° M) γ))
+    subst (λ x → ⌞ GluTy.A∙ B x ⌟) (sym (app[]ₘ (GluTm.M° F) (GluTm.M° M) γ))
       (GluTm.M∙ F γ γ∙ (GluTm.M° M [ γ ]Tmₘ) (GluTm.M∙ M γ γ∙))
 
   APP[]₀ : {Γ : GluCtx} {A B : GluTy}
     (F : GluTm Γ (FUN A B)) (M : GluTm Γ A) (γ : GluSub₀ Γ)
     → (APP {A = A} {B = B} F M) [ γ ]Tm₀ ≡ APP₀ A B (F [ γ ]Tm₀) (M [ γ ]Tm₀)
   APP[]₀ {A = A} {B = B} F M (γ , γ∙) = sym
-    (ΣPathP-subst (GluTy.A∙ B) (sym (app[]ₘ (GluTm.M° F) (GluTm.M° M) γ))
+    (ΣPathP-subst (λ x → ⌞ GluTy.A∙ B x ⌟) (sym (app[]ₘ (GluTm.M° F) (GluTm.M° M) γ))
       (GluTm.M∙ F γ γ∙ (GluTm.M° M [ γ ]Tmₘ) (GluTm.M∙ M γ γ∙)))
 
   APP[] : {Γ Δ : GluCtx} {A B : GluTy}
@@ -178,14 +178,14 @@ module DPRLR.Gluing.LogicalRelations.Function
   FUN-preserves-η {Γ = Γ} {A = A} {B = B} F = ≤ᵍ→≤ record
     { r° = η⇒ₘ (GluTm.M° F)
     ; r∙ = λ γ γ∙ →
-        HomPΠ {P = λ f m → GluTy.A∙ A m → GluTy.A∙ B (appₘ f m)} λ m →
-          HomPΠ {P = λ f _ → GluTy.A∙ B (appₘ f m)} λ m∙ →
+        HomPΠ {P = λ f m → ⌞ GluTy.A∙ A m ⌟ → ⌞ GluTy.A∙ B (appₘ f m) ⌟} λ m →
+          HomPΠ {P = λ f _ → ⌞ GluTy.A∙ B (appₘ f m) ⌟} λ m∙ →
             contravariant-universal-from (contravariant-reindex (λ f → appₘ f m) (GluTy.cA B))
               (pointwise γ γ∙ m m∙)
     }
     where
-    pointwise : (γ : ⌞ Subₘ εₘ (GluCtx.Γ° Γ) ⌟) (γ∙ : GluCtx.Γ∙ Γ γ)
-      (m : ⌞ Tmₘ εₘ (GluTy.A° A) ⌟) (m∙ : GluTy.A∙ A m)
+    pointwise : (γ : ⌞ Subₘ εₘ (GluCtx.Γ° Γ) ⌟) (γ∙ : ⌞ GluCtx.Γ∙ Γ γ ⌟)
+      (m : ⌞ Tmₘ εₘ (GluTy.A° A) ⌟) (m∙ : ⌞ GluTy.A∙ A m ⌟)
       → GluTm.M∙ (LAM {Γ = Γ} {A = A} {B = B} (FUNη-body {A = A} {B = B} F)) γ γ∙ m m∙
         ≡ contrav-transport (GluTy.cA B)
             (hom-map (λ f → appₘ (f [ γ ]Tmₘ) m) (η⇒ₘ (GluTm.M° F)))

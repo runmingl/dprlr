@@ -3,7 +3,7 @@ module DPRLR.Object.Syntax.Model where
 open import Cubical.Foundations.Prelude
 
 open import DPRLR.Object.Model.Model
-open import DPRLR.Object.Syntax.Base
+open import DPRLR.Object.Syntax.Localized
 import DPRLR.Object.Syntax.Raw as Raw
 
 SyntaxModel : SimpleCwF ℓ-zero ℓ-zero

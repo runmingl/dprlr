@@ -7,7 +7,7 @@ open import DPRLR.Simplicial.PreorderLocalization
 open import DPRLR.Object.Model.Model
 open import DPRLR.Object.Model.Morphism.Base
 open import DPRLR.Object.Model.Morphism.Properties
-open import DPRLR.Object.Syntax.Base
+open import DPRLR.Object.Syntax.Localized
 open import DPRLR.Object.Syntax.Model
 import DPRLR.Object.Syntax.Raw as Raw
 

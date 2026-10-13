@@ -8,7 +8,7 @@ open import DPRLR.Simplicial.Hom
 open import DPRLR.Simplicial.PreorderLocalization using (⌞_⌟)
 open import DPRLR.Object.Model.Model
 open import DPRLR.Object.Model.Morphism.Base
-open import DPRLR.Object.Syntax.Base
+open import DPRLR.Object.Syntax.Localized
 open import DPRLR.Object.Syntax.Model
 open import DPRLR.Object.Syntax.Initiality
 open import DPRLR.Object.Syntax.Raw using (ε ; Bool)

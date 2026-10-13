@@ -1,4 +1,4 @@
-module DPRLR.Object.Syntax.Base where
+module DPRLR.Object.Syntax.Localized where
 
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Function using (_∘_)
